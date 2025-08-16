@@ -1,0 +1,74 @@
+/* src/renderer/src/pages/LoginPage.module.css */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.loginBox {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  background-color: var(--color-background-mute);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.loginBox h2 {
+  margin: 0 0 30px;
+  padding: 0;
+  color: var(--ev-c-white);
+  text-align: center;
+  font-size: 24px;
+}
+
+.inputGroup {
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.inputGroup label {
+  color: var(--ev-c-text-2);
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 16px;
+  color: var(--ev-c-white);
+  border: none;
+  border-bottom: 1px solid var(--ev-c-gray-1);
+  outline: none;
+  background: transparent;
+  margin-top: 5px;
+}
+
+.error {
+  color: #ff4757;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.loginBox button {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ev-button-alt-text);
+  background-color: var(--ev-button-alt-bg);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.loginBox button:hover {
+  background-color: var(--ev-button-alt-hover-bg);
+}
+
+.loginBox button:disabled {
+  background-color: var(--ev-c-gray-2);
+  cursor: not-allowed;
+}
