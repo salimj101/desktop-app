@@ -1,0 +1,105 @@
+/* src/renderer/src/components/Sidebar.module.css */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: var(--c-bg-2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: width 0.3s ease;
+  border-right: 1px solid var(--c-border-1);
+}
+.sidebar.collapsed {
+  width: 80px;
+}
+.topSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid var(--c-border-1);
+}
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.collapseBtn {
+  background: none;
+  border: none;
+  color: var(--c-text-2);
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: transform 0.3s, background-color 0.2s;
+}
+.collapseBtn:hover {
+  background-color: var(--c-bg-3);
+}
+.sidebar.collapsed .collapseBtn {
+  transform: rotate(180deg);
+}
+
+.navList {
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+}
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 25px;
+  cursor: pointer;
+  color: var(--c-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  border-right: 4px solid transparent;
+}
+.sidebar.collapsed .navItem {
+  justify-content: center;
+  padding: 12px 0;
+}
+.navItem:hover {
+  background-color: var(--c-bg-3);
+  color: var(--c-text-1);
+}
+.navItem.active {
+  background-color: var(--c-accent-1);
+  color: #fff; /* Always white for best contrast on accent color */
+  font-weight: 500;
+  border-right-color: var(--c-accent-2, var(--c-accent-1));
+}
+
+/* --- THE KEY FIX FOR SVGS --- */
+.icon {
+  display: flex; /* Helps with alignment */
+  align-items: center;
+  margin-right: 20px;
+  transition: margin 0.3s ease;
+  flex-shrink: 0; /* Prevents icon from shrinking */
+}
+/* Ensure the SVG itself inherits the color of its parent (.navItem) */
+.icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  color: inherit; /* This is the magic line */
+}
+
+.sidebar.collapsed .icon {
+  margin-right: 0;
+}
+.sidebar.collapsed .label {
+  display: none;
+}
+.bottomSection {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--c-border-1);
+}

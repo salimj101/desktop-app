@@ -7,6 +7,7 @@ export interface User {
   email: string
   userType: string
 }
+
 export interface Todo {
   id: number
   userId: string
@@ -14,6 +15,36 @@ export interface Todo {
   completed: boolean
   createdAt: string
 }
+
+export interface Card {
+  id: number
+  columnId: number
+  content: string
+  order: number
+}
+export interface Column {
+  id: number
+  boardId: number
+  name: string
+  order: number
+  cards: Card[]
+}
+export interface Board {
+  id: number
+  userId: string
+  name: string
+  authorEmail: string
+  visibility: 'private' | 'public'
+  createdAt: string
+  columns?: Column[]
+}
+export interface PublicBoard {
+  id: number
+  name: string
+  createdAt: string
+  authorEmail: string
+}
+
 
 export interface ITodoAPI {
   getTodos: () => Promise<{ success: boolean; todos?: Todo[]; error?: string }>
@@ -28,9 +59,34 @@ export interface IAuthAPI {
   logout: () => Promise<{ success: boolean }>
 }
 
+export interface IKanbanAPI {
+ getBoards: () => Promise<{ success: boolean; boards?: Board[] }>
+  getPublicBoards: () => Promise<{ success: boolean; boards?: PublicBoard[] }>
+  getBoardDetails: (id: number) => Promise<{ success: boolean; board?: Board }>
+  createBoard: (data: { name: string; visibility: 'private' | 'public'; columns: string[] }) => Promise<{ success: boolean; board?: Board }>
+  updateBoard: (data: { boardId: number; name: string; visibility: 'private' | 'public' }) => Promise<{ success: boolean }>
+  deleteBoard: (boardId: number) => Promise<{ success: boolean }>
+  createCard: (data: { columnId: number; content: string }) => Promise<{ success: boolean; card?: Card }>
+  updateCardContent: (data: { cardId: number; content: string }) => Promise<{ success: boolean }>
+  deleteCard: (cardId: number) => Promise<{ success: boolean }>
+  moveCard: (data: { cardId: number; newColumnId: number; newOrder: number }) => Promise<{ success: boolean }>
+}
+
+export interface IGitAPI {
+  selectDirectory: () => Promise<{ success: boolean; path?: string; error?: string }>;
+  registerRepo: (data: { name: string; description: string; path: string; projectId: string; }) => Promise<{ success: boolean; data?: any; error?: string; }>;
+  extractCommits: (repoId: string) => Promise<{ success: boolean; data?: any[]; error?: string; }>;
+  getRepositoriesView: () => Promise<{ success: boolean; status?: string; repositories?: any[]; error?: string; }>;
+  syncCommits: (repoId: string) => Promise<{ success: boolean; data?: any; error?: string; message?: string; }>;
+  getMyProjects: () => Promise<{ success: boolean; data?: any[]; error?: string; }>;
+}
+
+
 declare global {
   interface Window {
     electron: ElectronAPI
-    api: IAuthAPI & ITodoAPI // Use our new interface here
+    api: IAuthAPI & ITodoAPI & IKanbanAPI & IGitAPI;// Use our new interface here
   }
 }
+
+

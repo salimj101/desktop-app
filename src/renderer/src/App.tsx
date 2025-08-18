@@ -1,67 +1,64 @@
 // src/renderer/src/App.tsx
 import { useState, useEffect } from 'react'
 import { User } from '../../preload/index.d'
-import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
+import MainLayout from './pages/MainLayout'
 
 function App(): React.JSX.Element {
+  // This useEffect for theming is perfect, no changes needed.
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme')
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme)
+    } else {
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
+    }
+  }, [])
+
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // On component mount, check if there's an existing session
+  // --- THE DEFINITIVE FIX ---
+  // The handleLogout function is now async and calls the backend API.
+  const handleLogout = async (): Promise<void> => {
+    // Step 1: Tell the main process to clear the session from the database.
+    await window.api.logout()
+    // Step 2: Clear the user from the React state to show the login page.
+    setUser(null)
+  }
+
   useEffect(() => {
-    const checkSession = async (): Promise<void> => {
+    const checkSession = async () => {
       const result = await window.api.checkSession()
       if (result.isLoggedIn && result.user) {
         setUser(result.user)
       }
       setIsLoading(false)
     }
+
     checkSession()
+
+    // This listener for background session expiry is also correct.
+    const onSessionExpired = () => handleLogout()
+    window.electron.ipcRenderer.on('session-expired', onSessionExpired)
+
+    // Cleanup function
+    return () => {
+      window.electron.ipcRenderer.removeListener('session-expired', onSessionExpired)
+    }
   }, [])
 
-  const handleLoginSuccess = (loggedInUser: User): void => {
-    setUser(loggedInUser)
-  }
-
-  const handleLogout = (): void => {
-    setUser(null)
-  }
-
-  // --- NEW CODE STARTS HERE ---
-  // Listen for 'session-expired' events pushed from the main process.
-  // This handles cases where a background session check fails (e.g., on window focus).
-  useEffect(() => {
-    // Define the event handler
-    const handleSessionExpired = (): void => {
-      console.log('Session expired event received. Logging out.')
-      handleLogout()
-    }
-
-    // Set up the listener
-    window.electron.ipcRenderer.on('session-expired', handleSessionExpired)
-
-    // Clean up the listener when the component unmounts to prevent memory leaks
-    return () => {
-      window.electron.ipcRenderer.removeAllListeners('session-expired')
-    }
-  }, []) // Empty dependency array ensures this listener is set up only once.
-  // --- NEW CODE ENDS HERE ---
-
-  // Show a loading indicator while we check the session
   if (isLoading) {
     return <div className="loading-screen">Checking session...</div>
   }
 
-  // Conditionally render the correct page
-  return (
-    <div className="container">
-      {user ? (
-        <HomePage user={user} onLogout={handleLogout} />
-      ) : (
-        <LoginPage onLoginSuccess={handleLoginSuccess} />
-      )}
-    </div>
+  // The login/logout logic in MainLayout is already passing the correct function.
+  // The onLoginSuccess prop for LoginPage is also correct.
+  return user ? (
+    <MainLayout user={user} onLogout={handleLogout} />
+  ) : (
+    <LoginPage onLoginSuccess={setUser} />
   )
 }
 

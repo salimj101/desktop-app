@@ -1,7 +1,7 @@
 // src/main/lib/auth.service.ts
 import axios from 'axios'
 // Make sure to import getSession!
-import { getSessionDb, clearSession, getSession } from './session.db'
+import { getDb, clearSession, getSession } from './database'
 
 async function checkToken(token: string) {
   try {
@@ -33,7 +33,7 @@ export const login = async (email, password) => {
     const accessTokenExpiresAt = await checkToken(access_token)
     const refreshTokenExpiresAt = await checkToken(refresh_token)
 
-    const db = getSessionDb()
+    const db = getDb()
     clearSession()
     db.prepare(
       `INSERT INTO session
@@ -67,7 +67,7 @@ export const login = async (email, password) => {
 }
 
 export async function checkAndRefreshSession() {
-  const db = getSessionDb()
+  const db = getDb()
   // The Fix: Use the correct helper function to get the session data row.
   const session = getSession()
 
@@ -77,6 +77,7 @@ export async function checkAndRefreshSession() {
 
   const now = new Date()
   const accessTokenExpiresAt = new Date(session.accessTokenExpiresAt)
+  let accessToken = session.accessToken;
 
   // Add a 60-second buffer to be safe.
   if (accessTokenExpiresAt.getTime() > now.getTime() + 60000) {
@@ -84,7 +85,8 @@ export async function checkAndRefreshSession() {
     return {
       userId: session.userId,
       email: session.email,
-      userType: session.userType
+      userType: session.userType,
+      accessToken
     }
   }
 
@@ -114,7 +116,8 @@ export async function checkAndRefreshSession() {
     return {
       userId: session.userId,
       email: session.email,
-      userType: session.userType
+      userType: session.userType,
+      accessToken
     }
   } catch (err) {
     clearSession()

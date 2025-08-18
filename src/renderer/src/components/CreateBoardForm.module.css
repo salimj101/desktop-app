@@ -1,0 +1,96 @@
+/* src/renderer/src/components/CreateBoardForm.module.css */
+
+.form h2 {
+  margin-bottom: 2rem;
+  text-align: center;
+  color: var(--c-text-1);
+}
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--c-text-2); /* THEME-AWARE */
+}
+.formGroup input[type='text'] {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--c-bg-3); /* THEME-AWARE */
+  border: 1px solid var(--c-border-1); /* THEME-AWARE */
+  border-radius: 5px;
+  color: var(--c-text-1); /* THEME-AWARE */
+}
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.radioGroup label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--c-text-1); /* THEME-AWARE */
+}
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.buttonGroup button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.buttonGroup button:hover {
+  opacity: 0.9;
+}
+
+/* Secondary button (Cancel) */
+.cancelBtn {
+  background-color: var(--c-button-bg); /* THEME-AWARE */
+  color: var(--c-button-text); /* THEME-AWARE */
+  border: 1px solid var(--c-border-1);
+}
+
+/* Primary button (Create/Submit) */
+.submitBtn {
+  background-color: var(--c-accent-1); /* THEME-AWARE */
+  color: #fff; /* White text looks best on accent color */
+}
+/* Specific fix for light mode button text */
+html[data-theme='light'] .submitBtn {
+  color: #ffffff;
+}
+.select {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--c-bg-3);
+  border: 1px solid var(--c-border-1);
+  border-radius: 5px;
+  color: var(--c-text-1);
+}
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.pathInputGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+.pathInputGroup input {
+  flex-grow: 1;
+}
+.pathInputGroup button {
+  flex-shrink: 0;
+  padding: 0 1rem;
+  background-color: var(--c-button-bg);
+  color: var(--c-button-text);
+  border: 1px solid var(--c-border-1);
+  border-radius: 5px;
+  cursor: pointer;
+}

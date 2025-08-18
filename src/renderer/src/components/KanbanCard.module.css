@@ -1,0 +1,26 @@
+.card {
+  background-color: var(--c-bg-2);
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px var(--c-shadow);
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  cursor: grab;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  border-left: 3px solid transparent;
+  color: var(--c-text-1);
+  position: relative; /* Ensure proper stacking */
+  z-index: 1; /* Prevent overlap issues */
+}
+.card:hover {
+  box-shadow: 0 4px 8px var(--c-shadow);
+  border-left-color: var(--c-accent-1);
+}
+.card:active {
+  cursor: grabbing;
+}

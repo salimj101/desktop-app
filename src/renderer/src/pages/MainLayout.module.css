@@ -1,0 +1,53 @@
+/* src/renderer/src/pages/MainLayout.module.css */
+
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* This is critical: prevents the whole page from scrolling */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 60px; /* Fixed height */
+  border-bottom: 1px solid var(--c-border-1);
+  background-color: var(--c-bg-2);
+  flex-shrink: 0; /* Prevents the header from shrinking */
+}
+
+.logoutBtn {
+  padding: 8px 16px;
+  background-color: var(--c-bg-3);
+  border: 1px solid var(--c-border-1);
+  border-radius: 5px;
+  color: var(--c-text-1);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+.logoutBtn:hover {
+  background-color: var(--c-danger);
+  border-color: var(--c-danger);
+  color: #fff;
+}
+
+/* This container now ONLY handles padding and lets its children control scrolling */
+.pageContainer {
+  flex-grow: 1;
+  padding: 1.5rem 2rem;
+  /* THE KEY FIX: We let the child component (like BoardView) manage its own overflow */
+  /* This allows BoardView to scroll horizontally without this container interfering */
+  display: flex;
+    position: relative; /* Ensure Toaster positions correctly */
+  flex-direction: column;
+  overflow: hidden; /* It contains, but does not scroll */
+}
+

@@ -1,67 +1,104 @@
-:root {
-  --ev-c-white: #ffffff;
-  --ev-c-white-soft: #f8f8f8;
-  --ev-c-white-mute: #f2f2f2;
+/* src/renderer/src/assets/base.css */
 
+/* --- THEME PALETTES --- */
+:root {
+  /* YOUR PREFERRED DARK THEME - THIS IS THE FOUNDATION */
+  --ev-c-white: #ffffff;
   --ev-c-black: #1b1b1f;
   --ev-c-black-soft: #222222;
   --ev-c-black-mute: #282828;
-
   --ev-c-gray-1: #515c67;
   --ev-c-gray-2: #414853;
   --ev-c-gray-3: #32363f;
-
   --ev-c-text-1: rgba(255, 255, 245, 0.86);
   --ev-c-text-2: rgba(235, 235, 245, 0.6);
   --ev-c-text-3: rgba(235, 235, 245, 0.38);
+  --ev-accent-1: #6988e6;
+  --ev-danger: #ff4757;
 
-  --ev-button-alt-border: transparent;
-  --ev-button-alt-text: var(--ev-c-text-1);
-  --ev-button-alt-bg: var(--ev-c-gray-3);
-  --ev-button-alt-hover-border: transparent;
-  --ev-button-alt-hover-text: var(--ev-c-text-1);
-  --ev-button-alt-hover-bg: var(--ev-c-gray-2);
+  /* Optional Light Theme Palette */
+  --lt-c-text-1: #2c3e50;
+  --lt-c-text-2: #34495e;
+  --lt-bg-1: #ecf0f1;
+  --lt-bg-2: #ffffff;
+  --lt-bg-3: #f4f6f8;
+  --lt-border-1: #dce1e6;
+  --lt-accent-1: #3498db;
+  --lt-danger: #e74c3c;
 }
 
-:root {
-  --color-background: var(--ev-c-black);
-  --color-background-soft: var(--ev-c-black-soft);
-  --color-background-mute: var(--ev-c-black-mute);
-
-  --color-text: var(--ev-c-text-1);
+/* --- THEME VARIABLE MAPPING --- */
+:root, html[data-theme='dark'] {
+  --c-text-1: var(--ev-c-text-1);
+  --c-text-2: var(--ev-c-text-2);
+  --c-text-3: var(--ev-c-text-3);
+  --c-bg-1: var(--ev-c-black);       /* Main page background */
+  --c-bg-2: var(--ev-c-black-soft);  /* Solid backgrounds for components like Sidebar, Modals, Cards */
+  --c-bg-3: var(--ev-c-black-mute);  /* Muted backgrounds for columns, inputs */
+  --c-border-1: var(--ev-c-gray-3);
+  --c-border-2: var(--ev-c-gray-2);
+  --c-accent-1: var(--ev-accent-1);
+  --c-danger: var(--ev-danger);
+  --c-shadow: rgba(0, 0, 0, 0.3);
+  --c-button-bg: var(--ev-c-gray-3);
+  --c-button-hover-bg: var(--ev-c-gray-2);
+  --c-button-text: var(--ev-c-text-1);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
+html[data-theme='light'] {
+  --c-text-1: var(--lt-c-text-1);
+  --c-text-2: var(--lt-c-text-2);
+  --c-text-3: #7f8c8d;
+  --c-bg-1: var(--lt-bg-1);
+  --c-bg-2: var(--lt-bg-2);
+  --c-bg-3: var(--lt-bg-3);
+  --c-border-1: var(--lt-border-1);
+  --c-border-2: #bdc3c7;
+  --c-accent-1: var(--lt-accent-1);
+  --c-danger: var(--lt-danger);
+  --c-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  --c-button-bg: #e1e5e9;
+  --c-button-hover-bg: #dce1e6;
+  --c-button-text: var(--lt-c-text-1);
 }
 
-ul {
-  list-style: none;
-}
-
+/* --- BASE STYLES --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
 body {
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
-  line-height: 1.6;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color: var(--c-text-1);
+  background: var(--c-bg-1);
+  font-family: Inter, -apple-system, sans-serif;
+  
+}
+
+/* --- THE GRADIENT BACKGROUND EFFECT --- */
+/* This is the key to making the background appear everywhere */
+.background-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: var(--c-bg-1);
+  
+}
+
+.background-wrapper::before {
+  content: '';
+  position: absolute;
+  width: 250vmin;
+  height: 250vmin;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, var(--c-bg-2) 0%, var(--c-bg-1) 50%);
+  z-index: 1;
+}
+
+/* This container will hold the actual page content */
+.content-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Allow this container to scroll, not the body */
 }

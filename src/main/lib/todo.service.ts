@@ -1,7 +1,7 @@
 // src/main/lib/todo.service.ts
-import { getSessionDb } from './session.db'
+import { getDb } from './database'
 
-const db = getSessionDb()
+const db = getDb()
 
 // All functions require a userId to ensure a user can only access their own todos.
 

@@ -169,12 +169,21 @@ code {
     display: none;
   }
 }
-/* Add this to src/renderer/src/assets/main.css */
-.loading-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  font-size: 1.5rem;
-  color: var(--ev-c-text-2);
+
+
+/* --- MODERN, THEMED GLOBAL SCROLLBARS --- */
+::-webkit-scrollbar {
+  width: 8px; /* Smaller scrollbar width */
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; /* Track is invisible */
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--c-border-2); /* Themed handle color */
+  border-radius: 10px;
+  border: 2px solid var(--c-bg-2); /* Creates a nice padding effect */
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--c-accent-1); /* Themed hover color */
 }
