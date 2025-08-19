@@ -1,0 +1,167 @@
+.syncBtn {
+  background: linear-gradient(90deg, #4f8cff 0%, #2356c7 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 1.3rem;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(79, 140, 255, 0.08);
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    box-shadow 0.18s,
+    transform 0.12s;
+  margin-top: 0.2rem;
+}
+.syncBtn:hover:not(:disabled) {
+  background: linear-gradient(90deg, #2356c7 0%, #4f8cff 100%);
+  box-shadow: 0 4px 16px rgba(79, 140, 255, 0.13);
+  transform: translateY(-2px) scale(1.03);
+}
+.setupBtn {
+  background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%);
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 1.3rem;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(241, 196, 15, 0.08);
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    box-shadow 0.18s,
+    transform 0.12s;
+  margin-top: 0.2rem;
+}
+.setupBtn:hover:not(:disabled) {
+  background: linear-gradient(90deg, #ffd200 0%, #f7971e 100%);
+  box-shadow: 0 4px 16px rgba(241, 196, 15, 0.13);
+  transform: translateY(-2px) scale(1.03);
+}
+.container {
+  padding: 2rem;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.checkAllBtn {
+  background: var(--c-primary);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.2s;
+}
+.checkAllBtn:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.offlineWarning {
+  color: var(--c-danger);
+  font-weight: 500;
+  margin-left: 1rem;
+}
+.repoList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.repoCard {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.09);
+  padding: 1.7rem 1.3rem 1.3rem 1.3rem;
+  min-width: 270px;
+  max-width: 350px;
+  flex: 1 1 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  position: relative;
+  border: 1.5px solid #f0f0f0;
+  transition:
+    box-shadow 0.18s,
+    border 0.18s;
+}
+.repoCard:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  border: 1.5px solid var(--c-primary);
+}
+.repoInfo {
+  margin-bottom: 0.5rem;
+}
+.status {
+  display: inline-block;
+  padding: 0.18em 0.85em;
+  border-radius: 12px;
+  font-size: 0.97em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: #f5f5f5;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.status.active {
+  color: var(--c-success);
+  background: #e8f7e2;
+  border: 1px solid var(--c-success);
+}
+.status.missing_local {
+  color: var(--c-warning);
+  background: #fffbe6;
+  border: 1px solid var(--c-warning);
+}
+.status.moved {
+  color: #b36f00;
+  background: #fff3e0;
+  border: 1px solid #b36f00;
+}
+.status.deleted {
+  color: var(--c-danger);
+  background: #ffeaea;
+  border: 1px solid var(--c-danger);
+}
+.status.error {
+  color: #fff;
+  background: var(--c-danger);
+  border: 1px solid var(--c-danger);
+}
+.healthy {
+  color: var(--c-success);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.actionBtn {
+  background: var(--c-accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.4rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+.actionBtn:hover:not(:disabled) {
+  background: var(--c-primary);
+}
+.path {
+  color: #888;
+  font-size: 0.95em;
+  margin-bottom: 0.25rem;
+}
+.pathModalContent {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

@@ -75,8 +75,8 @@ app.whenReady().then(() => {
    * under `result`.
    */
   const createSecureHandler =
-    (serviceFn: (userId: string, data?: any) => Promise<any> | any) =>
-    async (_event: any, data?: any) => {
+    <T>(serviceFn: (userId: string, data: T) => Promise<unknown> | unknown) =>
+    async (_event: Electron.IpcMainInvokeEvent, data: T) => {
       try {
         const user = await checkAndRefreshSession()
         // Ensure userId is passed as a string
@@ -247,34 +247,33 @@ app.whenReady().then(() => {
 
   // Secure handlers using createSecureHandler for operations that follow pattern (userId, data)
   ipcMain.handle('kanban:updateBoard', createSecureHandler(kanbanService.updateBoard))
-  ipcMain.handle('kanban:deleteBoard', createSecureHandler(kanbanService.deleteBoard))
+  ipcMain.handle('kanban:deleteBoard', createSecureHandler<number>(kanbanService.deleteBoard))
   ipcMain.handle('kanban:createCard', createSecureHandler(kanbanService.createCard))
   ipcMain.handle('kanban:updateCardContent', createSecureHandler(kanbanService.updateCardContent))
   ipcMain.handle('kanban:deleteCard', createSecureHandler(kanbanService.deleteCard))
   ipcMain.handle('kanban:moveCard', createSecureHandler(kanbanService.moveCard))
 
   // --- REGISTER ALL GIT HANDLERS ---
-  registerGitHandlers();
+  registerGitHandlers()
 
   // --- SCHEDULER (Background task runner) ---
   // Schedule a task to run every 30 minutes.
   cron.schedule('*/30 * * * *', async () => {
-    logger.info('[Scheduler] Running 30-minute sync task...');
+    logger.info('[Scheduler] Running 30-minute sync task...')
     try {
-      const session = await checkAndRefreshSession();
-      const repos = await GitServices.getAllLocalRepositories(session.userId);
+      const session = await checkAndRefreshSession()
+      const repos = await GitServices.getAllLocalRepositories(session.userId)
       for (const repo of repos) {
-        logger.info(`[Scheduler] Syncing repo: ${repo.name}`);
+        logger.info(`[Scheduler] Syncing repo: ${repo.name}`)
         // Extract new commits locally
-        await GitServices.extractNewCommits(repo.repoId, session.userId);
+        await GitServices.extractNewCommits(repo.repoId, session.userId)
         // Push unsynced commits to backend
         // We will do that later
-     }
-      logger.info('[Scheduler] Background task completed.');
-    } catch (error) {
+      }
+      logger.info('[Scheduler] Background task completed.')
+    } catch {
       // Session invalid or refresh failed: log and skip
-      logger.error(
-        '[Scheduler] Could not perform task, session is invalid');
+      logger.error('[Scheduler] Could not perform task, session is invalid')
     }
   })
 

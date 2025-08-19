@@ -66,7 +66,12 @@ export const login = async (email, password) => {
   }
 }
 
-export async function checkAndRefreshSession() {
+export async function checkAndRefreshSession(): Promise<{
+  userId: string
+  email: string
+  userType: string
+  accessToken: string
+}> {
   const db = getDb()
   // The Fix: Use the correct helper function to get the session data row.
   const session = getSession()
@@ -77,7 +82,7 @@ export async function checkAndRefreshSession() {
 
   const now = new Date()
   const accessTokenExpiresAt = new Date(session.accessTokenExpiresAt)
-  let accessToken = session.accessToken;
+  let accessToken = session.accessToken
 
   // Add a 60-second buffer to be safe.
   if (accessTokenExpiresAt.getTime() > now.getTime() + 60000) {

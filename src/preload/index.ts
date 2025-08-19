@@ -31,7 +31,16 @@ const api = {
   getRepositoriesView: () => ipcRenderer.invoke('git:getRepositoriesView'),
   syncCommits: (repoId) => ipcRenderer.invoke('git:syncCommits', repoId),
   getMyProjects: () => ipcRenderer.invoke('git:getMyProjects'),
-  selectDirectory: () => ipcRenderer.invoke('git:selectDirectory')
+  selectDirectory: () => ipcRenderer.invoke('git:selectDirectory'),
+  // --- NEW FUNCTIONS ---
+  getLocalRepoDetails: (repoId) => ipcRenderer.invoke('git:getLocalRepoDetails', repoId),
+  updateAndValidateRepoPath: (data) => ipcRenderer.invoke('git:updateAndValidateRepoPath', data),
+  setupMissingLocalRepo: (data) => ipcRenderer.invoke('git:setupMissingLocalRepo', data),
+  updateRepoDetails: (data) => ipcRenderer.invoke('git:updateRepoDetails', data),
+  checkAllRepoHealth: () => ipcRenderer.invoke('git:checkAllRepoHealth'),
+  syncRepoStatus: (repoId) => ipcRenderer.invoke('git:syncRepoStatus', repoId),
+  // Commits page
+  getCommits: () => ipcRenderer.invoke('getCommits')
 }
 
 if (process.contextIsolated) {
