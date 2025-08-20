@@ -1,7 +1,6 @@
 // src/renderer/src/components/RepoDetailModal.tsx
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import styles from './RepoDetailModal.module.css'
 // Ensure the correct type is imported or replace with a placeholder type
 // Define a local type if 'Repository' is not exported from the module
 type Repository = {
@@ -156,15 +155,19 @@ function RepoDetailModal({ repo, onUpdate, isOffline }: RepoDetailModalProps): R
     !repoId
 
   return (
-    <div className={styles.container}>
+    <div className="bg-[var(--c-bg-1)] p-6 rounded-lg max-w-2xl w-full mx-4 relative">
       {/* Sync Now button in top right, hidden when editing */}
       {!isEditingDetails && !isEditingPath && (
-        <div className={styles.topRight}>
-          <button className={styles.syncBtn} onClick={handleSync} disabled={disableSync}>
+        <div className="absolute top-6 right-6 flex items-center gap-3">
+          <button 
+            className="px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+            onClick={handleSync} 
+            disabled={disableSync}
+          >
             🔄 Sync Now
           </button>
           {isOffline && (
-            <span style={{ color: 'var(--c-danger)', marginLeft: 12, fontWeight: 500 }}>
+            <span className="text-red-500 font-medium">
               Offline: Actions disabled
             </span>
           )}
@@ -175,37 +178,37 @@ function RepoDetailModal({ repo, onUpdate, isOffline }: RepoDetailModalProps): R
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className={styles.titleInput}
+          className="w-full text-2xl font-semibold bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded p-3 text-[var(--c-text-1)] outline-none focus:border-[var(--c-accent-1)] transition-colors mb-4"
           autoFocus
         />
       ) : (
-        <h2>{repo.name}</h2>
+        <h2 className="text-2xl font-semibold text-[var(--c-text-1)] mb-4 pr-32">{repo.name}</h2>
       )}
 
       {isEditingDetails ? (
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className={styles.descriptionInput}
+          className="w-full p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] resize-none outline-none focus:border-[var(--c-accent-1)] transition-colors mb-6"
           rows={3}
           placeholder="Enter a description..."
         />
       ) : (
-        <p className={styles.description}>{repo.description || 'No description provided.'}</p>
+        <p className="text-[var(--c-text-2)] mb-6">{repo.description || 'No description provided.'}</p>
       )}
 
-      <div className={styles.statsGrid}>
-        <div>
-          <span>Status</span>
-          <p>{repo.status}</p>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="text-center">
+          <span className="block text-sm text-[var(--c-text-2)] mb-1">Status</span>
+          <p className="font-medium text-[var(--c-text-1)]">{repo.status}</p>
         </div>
-        <div>
-          <span>Total Commits</span>
-          <p>{repo.totalCommits ?? 'N/A'}</p>
+        <div className="text-center">
+          <span className="block text-sm text-[var(--c-text-2)] mb-1">Total Commits</span>
+          <p className="font-medium text-[var(--c-text-1)]">{repo.totalCommits ?? 'N/A'}</p>
         </div>
-        <div>
-          <span>Unsynced</span>
-          <p className={repo.unsyncedCommits && repo.unsyncedCommits > 0 ? styles.unsynced : ''}>
+        <div className="text-center">
+          <span className="block text-sm text-[var(--c-text-2)] mb-1">Unsynced</span>
+          <p className={`font-medium ${repo.unsyncedCommits && repo.unsyncedCommits > 0 ? 'text-orange-500' : 'text-[var(--c-text-1)]'}`}>
             {repo.unsyncedCommits !== undefined && repo.unsyncedCommits !== null
               ? repo.unsyncedCommits
               : 'N/A'}
@@ -213,57 +216,85 @@ function RepoDetailModal({ repo, onUpdate, isOffline }: RepoDetailModalProps): R
         </div>
       </div>
 
-      <div className={styles.pathSection}>
-        <label>Local Path</label>
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-[var(--c-text-1)] mb-2">Local Path</label>
         {isEditingPath ? (
-          <div className={styles.pathInputGroup}>
-            <input type="text" value={newPath} readOnly />
-            <button onClick={handleBrowse}>Browse...</button>
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              value={newPath} 
+              readOnly 
+              className="flex-1 p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] outline-none"
+            />
+            <button 
+              onClick={handleBrowse}
+              className="px-4 py-3 bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-2)] transition-colors"
+            >
+              Browse...
+            </button>
           </div>
         ) : (
-          <p title={repoPath}>{repoPath}</p>
+          <p className="text-[var(--c-text-2)] text-sm" title={repoPath}>{repoPath}</p>
         )}
       </div>
 
       {/* Main actions only visible when not editing */}
       {!isEditingDetails && !isEditingPath && (
-        <div className={styles.buttonGroup}>
+        <div className="flex gap-3 mb-4">
           <button
-            className={styles.secondaryBtn}
+            className="flex-1 px-4 py-2 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             onClick={() => setIsEditingDetails(true)}
             disabled={isOffline}
           >
             Edit Details
           </button>
           <button
-            className={styles.secondaryBtn}
+            className="flex-1 px-4 py-2 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             onClick={() => setIsEditingPath(true)}
             disabled={!repoId || !repoFingerprint || isOffline}
           >
             Update Path
           </button>
-          <button onClick={handleExtractCommits} disabled={!repoId || isOffline}>
+          <button 
+            onClick={handleExtractCommits} 
+            disabled={!repoId || isOffline}
+            className="flex-1 px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
             Extract Commits
           </button>
         </div>
       )}
       {/* Show Save/Cancel row above if editing */}
       {isEditingDetails && (
-        <div className={styles.editRow}>
-          <button className={styles.secondaryBtn} onClick={() => setIsEditingDetails(false)}>
+        <div className="flex gap-3 justify-end">
+          <button 
+            className="px-4 py-2 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] transition-colors" 
+            onClick={() => setIsEditingDetails(false)}
+          >
             Cancel
           </button>
-          <button onClick={handleSaveDetails} disabled={!name.trim()}>
+          <button 
+            onClick={handleSaveDetails} 
+            disabled={!name.trim()}
+            className="px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
             Save Details
           </button>
         </div>
       )}
       {isEditingPath && (
-        <div className={styles.editRow}>
-          <button className={styles.secondaryBtn} onClick={() => setIsEditingPath(false)}>
+        <div className="flex gap-3 justify-end">
+          <button 
+            className="px-4 py-2 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] transition-colors" 
+            onClick={() => setIsEditingPath(false)}
+          >
             Cancel
           </button>
-          <button onClick={handleUpdatePath} disabled={disableSavePath}>
+          <button 
+            onClick={handleUpdatePath} 
+            disabled={disableSavePath}
+            className="px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
             Save Path
           </button>
         </div>

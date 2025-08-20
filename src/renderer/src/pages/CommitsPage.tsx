@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import styles from './CommitsPage.module.css'
 import CommitDetailModal from './CommitDetailModal'
 
 interface Commit {
@@ -59,43 +58,43 @@ const CommitsPage = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className="p-8">
       <h1>Projects &gt; Repositories &gt; Commits</h1>
-      <div className={styles.repoList}>
+      <div className="flex flex-col gap-8 mt-8">
         {repos.map((repo) => (
-          <div key={repo.repoId} className={styles.repoBlock}>
+          <div key={repo.repoId} className="border-[1.5px] border-[var(--c-border-1)] rounded-[10px] bg-[var(--c-bg-2)] shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
             <div
-              className={styles.repoHeader}
+              className="flex items-center justify-between py-[1.1rem] px-6 text-[1.15rem] font-semibold bg-[var(--c-bg-3)] rounded-[10px_10px_0_0] cursor-pointer select-none transition-colors hover:bg-[var(--c-accent-1)] hover:text-white"
               onClick={() => setExpandedRepo(expandedRepo === repo.repoId ? null : repo.repoId)}
             >
-              <span className={styles.repoName}>{repo.repoName}</span>
-              <span className={styles.repoCount}>{repo.totalCommits} commits</span>
-              <span className={styles.expandIcon}>{expandedRepo === repo.repoId ? '▼' : '▶'}</span>
+              <span className="flex-[2]">{repo.repoName}</span>
+              <span className="flex-1 text-right text-[var(--c-text-2)]">{repo.totalCommits} commits</span>
+              <span className="ml-6 text-[1.2em]">{expandedRepo === repo.repoId ? '▼' : '▶'}</span>
             </div>
             {expandedRepo === repo.repoId && (
-              <div className={styles.commitsList}>
+              <div className="max-h-[60vh] overflow-y-auto border border-[var(--c-border-1)] rounded-lg bg-[var(--c-bg-2)]">
                 {(repo.commits ?? []).length === 0 ? (
-                  <div className={styles.emptyMsg}>No commits yet.</div>
+                  <div className="p-6 text-[var(--c-text-3)] text-center italic">No commits yet.</div>
                 ) : (
                   (repo.commits ?? []).map((commit) => (
                     <div
                       key={commit.id}
-                      className={
-                        styles.commitRow + ' ' + (commit.synced ? styles.synced : styles.unsynced)
-                      }
+                      className={`flex items-center gap-4 py-3 px-4 border-b border-[var(--c-border-1)] cursor-pointer transition-colors hover:bg-[var(--c-bg-3)] last:border-b-0 ${
+                        commit.synced ? 'opacity-70' : 'font-semibold text-[var(--c-accent-1)]'
+                      }`}
                       onClick={() => {
                         setSelectedCommit(commit)
                         setModalType('detail')
                         setModalCommit(commit)
                       }}
                     >
-                      <div className={styles.hash}>{commit.commitHash.slice(0, 8)}</div>
-                      <div className={styles.message}>{commit.message}</div>
-                      <div className={styles.branch}>{commit.branch}</div>
-                      <div className={styles.time}>
+                      <div className="font-mono min-w-[70px]">{commit.commitHash.slice(0, 8)}</div>
+                      <div className="flex-[2] whitespace-nowrap overflow-hidden text-ellipsis">{commit.message}</div>
+                      <div className="flex-1 text-[var(--c-text-2)]">{commit.branch}</div>
+                      <div className="flex-[1.2] text-[var(--c-text-3)] text-[0.95em]">
                         {new Date(commit.timestamp).toLocaleString()}
                       </div>
-                      <div className={styles.status}>
+                      <div className="min-w-[90px] text-right">
                         {commit.synced ? '✅ Synced' : '🕓 Unsynced'}
                       </div>
                     </div>
@@ -153,25 +152,28 @@ function CommitStatsModal({
     parsed = stats ? JSON.parse(stats) : null
   } catch {}
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.backBtn} onClick={onBack}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-[var(--c-bg-1)] p-6 rounded-lg max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="mb-4 px-3 py-1 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] transition-colors" 
+          onClick={onBack}
+        >
           &larr; Detail
         </button>
-        <h2>Commit Stats</h2>
+        <h2 className="text-xl font-semibold text-[var(--c-text-1)] mb-4">Commit Stats</h2>
         {parsed ? (
-          <ul>
+          <ul className="space-y-2">
             {Object.entries(parsed).map(([k, v]) => (
-              <li key={k}>
-                <span className={styles.statKey}>
+              <li key={k} className="flex gap-2">
+                <span className="font-medium text-[var(--c-text-1)]">
                   <strong>{k}</strong>:
-                </span>{' '}
-                <span>{v as any}</span>
+                </span>
+                <span className="text-[var(--c-text-2)]">{v as any}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <div className={styles.emptyMsg}>No stats available.</div>
+          <div className="text-center text-[var(--c-text-2)] py-4">No stats available.</div>
         )}
       </div>
     </div>
@@ -192,24 +194,27 @@ function CommitChangesModal({
     parsed = Array.isArray(temp) ? temp : null
   } catch {}
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.backBtn} onClick={onBack}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-[var(--c-bg-1)] p-6 rounded-lg max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="mb-4 px-3 py-1 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] transition-colors" 
+          onClick={onBack}
+        >
           &larr; Detail
         </button>
-        <h2>Commit Changes</h2>
+        <h2 className="text-xl font-semibold text-[var(--c-text-1)] mb-4">Commit Changes</h2>
         {parsed && parsed.length ? (
-          <ul>
+          <ul className="space-y-2">
             {parsed.map((chg: any, i: number) => (
-              <li key={i}>
-                <strong>{chg.fileName}</strong>
-                <span className={styles.added}>+{chg.added}</span>
-                <span className={styles.removed}>-{chg.removed}</span>
+              <li key={i} className="flex items-center gap-2">
+                <strong className="text-[var(--c-text-1)]">{chg.fileName}</strong>
+                <span className="text-green-500 font-mono text-sm">+{chg.added}</span>
+                <span className="text-red-500 font-mono text-sm">-{chg.removed}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <div className={styles.emptyMsg}>No changes available.</div>
+          <div className="text-center text-[var(--c-text-2)] py-4">No changes available.</div>
         )}
       </div>
     </div>

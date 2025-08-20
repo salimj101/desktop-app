@@ -15,7 +15,6 @@ import { KanbanColumn } from '../components/KanbanColumn';
 import CardDetailModal from '../components/CardDetailModal';
 import KanbanCard from '../components/KanbanCard';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import styles from './BoardView.module.css';
 import { createPortal } from 'react-dom';
 import debounce from 'lodash/debounce';
 
@@ -238,10 +237,15 @@ function BoardView({ boardId, onBack }: { boardId: number; onBack: () => void })
 
   return (
     <>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <button onClick={onBack}>← Back to Boards</button>
-          <h2>{board.name}</h2>
+      <div className="flex flex-col h-screen bg-[var(--c-bg-1)]">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--c-border)] bg-[var(--c-bg-2)]">
+          <button 
+            onClick={onBack}
+            className="px-4 py-2 bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-2)] transition-colors"
+          >
+            ← Back to Boards
+          </button>
+          <h2 className="text-xl font-semibold text-[var(--c-text-1)]">{board.name}</h2>
           <div />
         </div>
         <DndContext
@@ -250,8 +254,8 @@ function BoardView({ boardId, onBack }: { boardId: number; onBack: () => void })
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
         >
-          <div className={styles.board}>
-            {board.columns.map((column) => (
+          <div className="flex-1 flex gap-6 p-6 overflow-x-auto">
+            {board.columns?.map((column) => (
               <ErrorBoundary key={column.id} fallback={<div>Error loading column: {column.name}</div>}>
                 <KanbanColumn
                   column={column}

@@ -1,7 +1,6 @@
 // src/renderer/src/components/Card.tsx
 import { useState } from 'react'
 import { Card as CardType } from '../../../preload/index.d'
-import styles from './Card.module.css'
 
 interface CardProps {
   card: CardType
@@ -22,25 +21,25 @@ function Card({ card, onUpdate, onDelete }: CardProps): React.JSX.Element {
 
   if (isEditing) {
     return (
-      <div className={styles.card}>
+      <div className="bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded-lg p-4 shadow-sm">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onBlur={handleUpdate}
           autoFocus
-          className={styles.editor}
+          className="w-full p-2 bg-[var(--c-bg-3)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] resize-none outline-none focus:border-[var(--c-accent-1)]"
         />
-        <button onClick={handleUpdate} className={styles.saveBtn}>Save</button>
+        <button onClick={handleUpdate} className="mt-2 px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] transition-colors">Save</button>
       </div>
     )
   }
 
   return (
-    <div className={styles.card}>
-      <p>{card.content}</p>
-      <div className={styles.actions}>
-        <button onClick={() => setIsEditing(true)} className={styles.actionBtn}>✎</button>
-        <button onClick={() => onDelete(card.id)} className={styles.actionBtn}>🗑️</button>
+    <div className="bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded-lg p-4 shadow-sm group hover:shadow-md transition-shadow">
+      <p className="text-[var(--c-text-1)] mb-2">{card.content}</p>
+      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={() => setIsEditing(true)} className="w-8 h-8 flex items-center justify-center text-[var(--c-text-2)] hover:text-[var(--c-accent-1)] hover:bg-[var(--c-bg-3)] rounded transition-colors">✎</button>
+        <button onClick={() => onDelete(card.id)} className="w-8 h-8 flex items-center justify-center text-[var(--c-text-2)] hover:text-red-500 hover:bg-[var(--c-bg-3)] rounded transition-colors">🗑️</button>
       </div>
     </div>
   )

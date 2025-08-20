@@ -10,7 +10,6 @@ import RepositoriesPage from './RepositoriesPage'
 import ProjectsPage from './ProjectsPage' // Ensure ProjectsPage is imported
 import CommitsPage from './CommitsPage' // Import CommitsPage
 import RepoHealthPage from './RepoHealthPage'
-import styles from './MainLayout.module.css'
 
 function MainLayout({ user, onLogout }: { user: User; onLogout: () => void }): React.JSX.Element {
   const [activePage, setActivePage] = useState('projects') // Default to Projects
@@ -76,19 +75,19 @@ function MainLayout({ user, onLogout }: { user: User; onLogout: () => void }): R
   }
 
   return (
-    <div className={styles.layout}>
+    <div className="flex h-screen w-screen">
       <Sidebar activePage={activePage} onNavigate={handleNavigate} />
-      <main className={`${styles.content} background-wrapper`}>
+      <main className="flex-grow flex flex-col overflow-hidden background-wrapper">
         <div className="content-container">
-          <header className={styles.header}>
+          <header className="flex justify-between items-center px-8 h-[60px] border-b border-[var(--c-border-1)] bg-[var(--c-bg-2)] flex-shrink-0">
             <span>
               Logged in as: <strong>{user.email}</strong>
             </span>
-            <button onClick={onLogout} className={styles.logoutBtn}>
+            <button onClick={onLogout} className="py-2 px-4 bg-[var(--c-bg-3)] border border-[var(--c-border-1)] rounded-[5px] text-[var(--c-text-1)] cursor-pointer transition-colors hover:bg-[var(--c-danger)] hover:border-[var(--c-danger)] hover:text-white">
               Logout
             </button>
           </header>
-          <div className={styles.pageContainer}>{renderActivePage()}</div>
+          <div className="flex-grow py-6 px-8 flex relative flex-col overflow-hidden">{renderActivePage()}</div>
         </div>
       </main>
     </div>

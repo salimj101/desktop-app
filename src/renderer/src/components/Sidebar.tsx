@@ -1,6 +1,5 @@
 // src/renderer/src/components/Sidebar.tsx
 import { useState } from 'react'
-import styles from './Sidebar.module.css'
 import ThemeSwitcher from './ThemeSwitcher'
 
 // --- PROFESSIONAL SVG ICONS ---
@@ -60,6 +59,7 @@ const RepoIcon = () => (
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
   </svg>
 )
+
 const HealthIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -155,10 +155,10 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   // The navItems array now uses the icon components directly
-   const navItems = [
+  const navItems = [
     { id: 'projects', label: 'Projects', icon: <ProjectIcon /> },
     { id: 'repositories', label: 'Repositories', icon: <RepoIcon /> },
-    { id: 'repohealth', label: 'Repo Health', icon: <HealthIcon /> }, // Changed icon here
+    { id: 'repohealth', label: 'Repo Health', icon: <HealthIcon /> },
     { id: 'commits', label: 'Commits', icon: <CommitIcon /> },
     { id: 'todo', label: 'Todo', icon: <TodoIcon /> },
     { id: 'kanban', label: 'Kanban', icon: <KanbanIcon /> },
@@ -166,29 +166,45 @@ function Sidebar({ activePage, onNavigate }: SidebarProps): React.JSX.Element {
   ]
 
   return (
-    <nav className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
+    <nav className={`${isCollapsed ? 'w-20' : 'w-[250px]'} h-screen bg-[var(--c-bg-2)] flex flex-col justify-between transition-[width] duration-300 ease-in-out border-r border-[var(--c-border-1)]`}>
       <div>
-        <div className={styles.topSection}>
-          <h1 className={styles.logo}>{isCollapsed ? 'G' : 'GitTracker'}</h1>
-          <button onClick={() => setIsCollapsed(!isCollapsed)} className={styles.collapseBtn}>
+        <div className="flex items-center justify-between p-[15px] border-b border-[var(--c-border-1)]">
+          <h1 className="text-2xl font-bold whitespace-nowrap overflow-hidden">
+            {isCollapsed ? 'G' : 'GitTracker'}
+          </h1>
+          <button 
+            onClick={() => setIsCollapsed(!isCollapsed)} 
+            className={`bg-none border-none text-[var(--c-text-2)] cursor-pointer p-[5px] flex items-center justify-center rounded-full transition-all duration-300 hover:bg-[var(--c-bg-3)] ${isCollapsed ? 'rotate-180' : ''}`}
+          >
             <ChevronIcon />
           </button>
         </div>
-        <ul className={styles.navList}>
+        <ul className="list-none py-[10px] m-0">
           {navItems.map((item) => (
             <li
               key={item.id}
-              className={`${styles.navItem} ${activePage === item.id ? styles.active : ''}`}
+              className={`flex items-center cursor-pointer whitespace-nowrap overflow-hidden transition-all duration-200 border-r-4 border-transparent
+                ${isCollapsed ? 'justify-center px-0 py-3' : 'px-[25px] py-3'}
+                ${activePage === item.id 
+                  ? 'bg-[var(--c-accent-1)] text-white font-medium border-r-[var(--c-accent-2,var(--c-accent-1))]' 
+                  : 'text-[var(--c-text-2)] hover:bg-[var(--c-bg-3)] hover:text-[var(--c-text-1)]'
+                }`}
               onClick={() => onNavigate(item.id)}
               title={item.label}
             >
-              <div className={styles.icon}>{item.icon}</div>
-              <span className={styles.label}>{item.label}</span>
+              <div className={`flex items-center flex-shrink-0 transition-[margin] duration-300 ease-in-out ${isCollapsed ? 'mr-0' : 'mr-5'}`}>
+                <div className="w-5 h-5 stroke-2 text-inherit">
+                  {item.icon}
+                </div>
+              </div>
+              <span className={`${isCollapsed ? 'hidden' : 'block'}`}>
+                {item.label}
+              </span>
             </li>
           ))}
         </ul>
       </div>
-      <div className={styles.bottomSection}>
+      <div className="p-5 flex justify-center border-t border-[var(--c-border-1)]">
         <ThemeSwitcher />
       </div>
     </nav>

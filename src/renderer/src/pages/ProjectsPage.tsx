@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import type { IGitAPI } from '../../../preload/index.d'
 import toast from 'react-hot-toast'
-import styles from './ProjectsPage.module.css'
 
 // Support both online and offline project shape
 interface Project {
@@ -41,19 +40,19 @@ function ProjectsPage({ onProjectSelect }: ProjectsPageProps): React.JSX.Element
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (isLoading) return <div className={styles.centeredMessage}>Loading projects...</div>
+  if (isLoading) return <div className="text-center py-16 text-[var(--c-text-2)]">Loading projects...</div>
 
   return (
     <div>
-      <div className={styles.header}>
-        <h2>Your Projects</h2>
+      <div className="mb-8">
+        <h2 className="text-3xl">Your Projects</h2>
         {isOffline && (
           <span style={{ color: 'var(--c-danger)', marginLeft: 12, fontWeight: 500 }}>
             Offline: Actions disabled
           </span>
         )}
       </div>
-      <div className={styles.projectGrid}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-6">
         {projects.map((project) => {
           // Use _id (online) or projectId (offline) as key and click value
           const id = project._id || project.projectId || 'unknown'
@@ -61,18 +60,17 @@ function ProjectsPage({ onProjectSelect }: ProjectsPageProps): React.JSX.Element
           return (
             <div
               key={id}
-              className={styles.projectCard}
+              className="bg-[var(--c-bg-2)] p-6 rounded-lg border border-[var(--c-border-1)] cursor-pointer transition-colors hover:border-[var(--c-accent-1)]"
               tabIndex={0}
               role="button"
               onClick={() => onProjectSelect(id)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') onProjectSelect(id)
               }}
-              style={{ cursor: 'pointer' }}
             >
-              <h3>{label}</h3>
-              <p>{(project.repositories ?? []).length} repositories</p>
-              <span className={styles.viewLink}>View Repositories &rarr;</span>
+              <h3 className="mb-2">{label}</h3>
+              <p className="text-[var(--c-text-2)] mb-6">{(project.repositories ?? []).length} repositories</p>
+              <span className="text-[var(--c-accent-1)] no-underline font-semibold">View Repositories &rarr;</span>
             </div>
           )
         })}

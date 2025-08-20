@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import styles from './RepositoriesPage.module.css'
 import Modal from '../components/Modal'
 import SetupRepoModal from '../components/SetupRepoModal'
 import type { IGitAPI } from '../../../preload/index.d'
@@ -104,15 +103,15 @@ function RepoHealthPage(): JSX.Element {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
+    <div className="p-8">
+      <div className="flex items-center gap-6 mb-8">
         <h2>Repository Health</h2>
-        <button onClick={handleCheckAll} disabled={isOffline} className={styles.checkAllBtn}>
+        <button onClick={handleCheckAll} disabled={isOffline} className="bg-[var(--c-primary)] text-white border-none py-2 px-6 rounded font-semibold cursor-pointer ml-auto transition-colors disabled:bg-[#aaa] disabled:cursor-not-allowed disabled:opacity-60">
           Check All
         </button>
-        {isOffline && <span className={styles.offlineWarning}>Offline: Health check disabled</span>}
+        {isOffline && <span className="text-[var(--c-danger)] font-medium ml-4">Offline: Health check disabled</span>}
       </div>
-      <div className={styles.repoList}>
+      <div className="flex flex-wrap gap-6">
         {repositories.map((repo) => {
           // Only show 'missing_local' for repos missing from SQLite (syncStatus === 'missing_local')
           const status =
@@ -123,35 +122,20 @@ function RepoHealthPage(): JSX.Element {
             return (
               <div
                 key={repo.repoId || repo._id}
-                className={styles.repoCard}
-                style={{
-                  backgroundColor: 'var(--c-bg-2)',
-                  border: '2px dashed var(--c-warning)',
-                  color: 'var(--c-text-1)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-                  cursor: 'default',
-                  opacity: 1,
-                  position: 'relative',
-                  marginBottom: 12
-                }}
+                className="bg-[var(--c-bg-2)] border-2 border-dashed border-[var(--c-warning)] text-[var(--c-text-1)] shadow-[0_2px_8px_rgba(0,0,0,0.07)] cursor-default opacity-100 relative mb-3 rounded-[10px] p-[1.7rem_1.3rem_1.3rem_1.3rem] min-w-[270px] max-w-[350px] flex-[1_1_270px] flex flex-col gap-[0.7rem] transition-[box-shadow_0.18s,border_0.18s] hover:shadow-[0_4px_18px_rgba(0,0,0,0.13)] hover:border-[var(--c-primary)]"
               >
-                <div className={styles.repoInfo}>
-                  <h3 title={repo.name} style={{ color: 'var(--c-text-1)' }}>
+                <div className="mb-2">
+                  <h3 title={repo.name} className="text-[var(--c-text-1)]">
                     {repo.name}
                   </h3>
-                  <p className={styles.path} title={repo.path} style={{ color: 'var(--c-text-2)' }}>
+                  <p className="text-[#888] text-[0.95em] mb-1" title={repo.path}>
                     {repo.path}
                   </p>
                 </div>
-                <span
-                  className={`${styles.status} ${styles[status]}`}
-                  style={{ marginLeft: 'auto', color: 'var(--c-warning)' }}
-                >
-                  <span style={{ fontWeight: 600 }}>Missing Local</span>
+                <span className="inline-block py-[0.18em] px-[0.85em] rounded-xl text-[0.97em] font-semibold tracking-[0.01em] mt-1 mb-1 ml-auto text-[var(--c-warning)] bg-[#fffbe6] border border-[var(--c-warning)]">
+                  <span className="font-semibold">Missing Local</span>
                 </span>
-                <div
-                  style={{ color: 'var(--c-warning)', fontSize: 13, marginTop: 4, marginBottom: 8 }}
-                >
+                <div className="text-[var(--c-warning)] text-[13px] mt-1 mb-2">
                   {healthMsg || 'This repository is missing locally. You can set it up below.'}
                 </div>
                 {!isOffline && (
@@ -160,7 +144,7 @@ function RepoHealthPage(): JSX.Element {
                       e.stopPropagation()
                       handleSetupMissing(repo)
                     }}
-                    className={styles.setupBtn}
+                    className="bg-gradient-to-r from-[#f7971e] to-[#ffd200] text-[#222] border-none rounded-md py-[0.45rem] px-[1.3rem] font-semibold text-base shadow-[0_2px_8px_rgba(241,196,15,0.08)] cursor-pointer transition-all mt-[0.2rem] hover:bg-gradient-to-r hover:from-[#ffd200] hover:to-[#f7971e] hover:shadow-[0_4px_16px_rgba(241,196,15,0.13)] hover:transform hover:-translate-y-[2px] hover:scale-[1.03]"
                   >
                     Setup
                   </button>
@@ -172,35 +156,34 @@ function RepoHealthPage(): JSX.Element {
           return (
             <div
               key={repo.repoId || repo._id}
-              className={styles.repoCard}
-              style={{
-                backgroundColor: 'var(--c-bg-2)',
-                border: '1px solid var(--c-border-1)',
-                color: 'var(--c-text-1)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-                cursor: 'default',
-                opacity: 1
-              }}
+              className="bg-[var(--c-bg-2)] border border-[var(--c-border-1)] text-[var(--c-text-1)] shadow-[0_2px_8px_rgba(0,0,0,0.07)] cursor-default opacity-100 rounded-[10px] p-[1.7rem_1.3rem_1.3rem_1.3rem] min-w-[270px] max-w-[350px] flex-[1_1_270px] flex flex-col gap-[0.7rem] relative transition-[box-shadow_0.18s,border_0.18s] hover:shadow-[0_4px_18px_rgba(0,0,0,0.13)] hover:border-[var(--c-primary)]"
             >
-              <div className={styles.repoInfo}>
-                <h3 title={repo.name} style={{ color: 'var(--c-text-1)' }}>
+              <div className="mb-2">
+                <h3 title={repo.name} className="text-[var(--c-text-1)]">
                   {repo.name}
                 </h3>
-                <p className={styles.path} title={repo.path} style={{ color: 'var(--c-text-2)' }}>
+                <p className="text-[#888] text-[0.95em] mb-1" title={repo.path}>
                   {repo.path}
                 </p>
               </div>
-              <span className={`${styles.status} ${styles[status]}`} style={{ marginLeft: 'auto' }}>
+              <span className={`inline-block py-[0.18em] px-[0.85em] rounded-xl text-[0.97em] font-semibold tracking-[0.01em] mt-1 mb-1 ml-auto ${
+                status === 'active' ? 'text-[var(--c-success)] bg-[#e8f7e2] border border-[var(--c-success)]' :
+                status === 'missing_local' ? 'text-[var(--c-warning)] bg-[#fffbe6] border border-[var(--c-warning)]' :
+                status === 'moved' ? 'text-[#b36f00] bg-[#fff3e0] border border-[#b36f00]' :
+                status === 'deleted' ? 'text-[var(--c-danger)] bg-[#ffeaea] border border-[var(--c-danger)]' :
+                status === 'error' ? 'text-white bg-[var(--c-danger)] border border-[var(--c-danger)]' :
+                'bg-[#f5f5f5]'
+              }`}>
                 {status}
               </span>
               {healthMsg && (
-                <div style={{ color: 'var(--c-warning)', fontSize: 13, marginTop: 4 }}>
+                <div className="text-[var(--c-warning)] text-[13px] mt-1">
                   {healthMsg}
                 </div>
               )}
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <div className="flex gap-2 mt-2">
                 {!isOffline && repo.status === 'deleted' && (
-                  <button onClick={() => handleFixPath(repo)} className={styles.secondaryAction}>
+                  <button onClick={() => handleFixPath(repo)} className="bg-[var(--c-accent)] text-white border-none rounded py-[0.4rem] px-[1.2rem] font-medium cursor-pointer mt-2 transition-colors hover:bg-[var(--c-primary)]">
                     Update Path
                   </button>
                 )}
@@ -210,7 +193,7 @@ function RepoHealthPage(): JSX.Element {
                       e.stopPropagation()
                       await handleSyncRepoStatus(repo)
                     }}
-                    className={styles.syncBtn}
+                    className="bg-gradient-to-r from-[#4f8cff] to-[#2356c7] text-white border-none rounded-md py-[0.45rem] px-[1.3rem] font-semibold text-base shadow-[0_2px_8px_rgba(79,140,255,0.08)] cursor-pointer transition-all mt-[0.2rem] hover:bg-gradient-to-r hover:from-[#2356c7] hover:to-[#4f8cff] hover:shadow-[0_4px_16px_rgba(79,140,255,0.13)] hover:transform hover:-translate-y-[2px] hover:scale-[1.03]"
                   >
                     Sync Status
                   </button>

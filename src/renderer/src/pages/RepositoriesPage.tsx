@@ -15,7 +15,6 @@ type Repository = {
   unsyncedCommits?: number
 }
 import toast from 'react-hot-toast'
-import styles from './RepositoriesPage.module.css'
 import Modal from '../components/Modal'
 import RegisterRepoForm from '../components/RegisterRepoForm'
 import RepoDetailModal from '../components/RepoDetailModal'
@@ -99,25 +98,25 @@ function RepositoriesPage({ projectId, onBack }: RepositoriesPageProps): React.J
   }
 
   if (isLoading) {
-    return <div className={styles.centeredMessage}>Loading repositories...</div>
+    return <div className="text-center py-16 text-[var(--c-text-2)]">Loading repositories...</div>
   }
 
   return (
     <>
       <div>
-        <div className={styles.header}>
-          <div>
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex gap-4">
             {projectId && (
-              <button onClick={onBack} className={styles.backButton}>
+              <button onClick={onBack} className="bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border-1)] px-4 py-2 rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90">
                 ← All Projects
               </button>
             )}
-            <h2>{projectId ? 'Repositories for Project' : 'All Repositories'}</h2>
+            <h2 className="text-3xl">{projectId ? 'Repositories for Project' : 'All Repositories'}</h2>
           </div>
-          <div>
+          <div className="flex gap-4">
             <button
               onClick={handleSyncAll}
-              className={styles.secondaryAction}
+              className="bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border-1)] px-4 py-2 rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90"
               disabled={isOffline}
               style={isOffline ? { opacity: 0.6, pointerEvents: 'none' } : {}}
               title={isOffline ? 'Offline: Action disabled' : undefined}
@@ -126,6 +125,7 @@ function RepositoriesPage({ projectId, onBack }: RepositoriesPageProps): React.J
             </button>
             <button
               onClick={() => setModal('register')}
+              className="bg-[var(--c-accent-1)] text-white border-none px-4 py-2 rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90"
               disabled={isOffline}
               style={isOffline ? { opacity: 0.6, pointerEvents: 'none' } : {}}
               title={isOffline ? 'Offline: Action disabled' : undefined}
@@ -135,36 +135,48 @@ function RepositoriesPage({ projectId, onBack }: RepositoriesPageProps): React.J
           </div>
         </div>
 
-        <div className={styles.repoList}>
+        <div className="space-y-4">
           {filteredRepositories.map((repo) => (
             <div
               key={repo.repoId || repo._id}
-              className={styles.repoCard}
+              className="bg-[var(--c-bg-2)] border border-[var(--c-border-1)] rounded-md p-4 transition-all hover:bg-[var(--c-bg-3)] cursor-pointer"
               onClick={() => handleCardClick(repo)}
             >
-              <div className={styles.repoInfo}>
-                <h3 title={repo.name}>{repo.name}</h3>
-                <p className={styles.path} title={repo.path}>
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-xl font-bold text-[var(--c-text-1)] truncate" title={repo.name}>{repo.name}</h3>
+                <p className="text-sm text-[var(--c-text-2)] truncate max-w-[300px] ml-4" title={repo.path}>
                   {repo.path}
                 </p>
               </div>
-              <span
-                className={`${styles.status} ${styles[(repo.syncStatus || repo.status) ?? '']}`}
-              >
-                {repo.syncStatus || repo.status}
-              </span>
-
-              {repo.syncStatus === 'missing_local' && (
-                <button
-                  className={styles.setupButton}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleCardClick(repo)
-                  }}
+              <div className="flex justify-between items-center">
+                <span
+                  className={`px-3 py-1 text-sm rounded-full ${
+                    (repo.syncStatus || repo.status) === 'clean'
+                      ? 'bg-green-100 text-green-800'
+                      : (repo.syncStatus || repo.status) === 'dirty'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : (repo.syncStatus || repo.status) === 'error'
+                      ? 'bg-red-100 text-red-800'
+                      : (repo.syncStatus || repo.status) === 'missing_local'
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
                 >
-                  Setup
-                </button>
-              )}
+                  {repo.syncStatus || repo.status}
+                </span>
+
+                {repo.syncStatus === 'missing_local' && (
+                  <button
+                    className="bg-[var(--c-accent-1)] text-white border-none px-3 py-1 text-sm rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCardClick(repo)
+                    }}
+                  >
+                    Setup
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

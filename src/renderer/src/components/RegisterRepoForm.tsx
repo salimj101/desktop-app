@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import styles from './CreateBoardForm.module.css'
 
 interface Project { _id: string; name: string; }
 interface RegisterRepoFormProps { onSuccess: () => void; onCancel: () => void; }
@@ -68,21 +67,83 @@ function RegisterRepoForm({ onSuccess, onCancel }: RegisterRepoFormProps): React
   }
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <h2>Register a New Repository</h2>
-      <div className={styles.formGroup}><label htmlFor="repoName">Repository Name</label><input id="repoName" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., My Awesome Project" /></div>
-      <div className={styles.formGroup}><label htmlFor="repoDesc">Description (Optional)</label><input id="repoDesc" type="text" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-      <div className={styles.formGroup}>
-        <label htmlFor="repoPath">Full Local Path</label>
-        <div className={styles.pathInputGroup}>
-          <input id="repoPath" type="text" value={path} placeholder="Click Browse to select a folder..." readOnly />
-          <button type="button" onClick={handleBrowse}>Browse...</button>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-xl font-semibold text-[var(--c-text-1)] mb-4">Register a New Repository</h2>
+      <div className="space-y-2">
+        <label htmlFor="repoName" className="block text-sm font-medium text-[var(--c-text-1)]">Repository Name</label>
+        <input 
+          id="repoName" 
+          type="text" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          placeholder="e.g., My Awesome Project" 
+          className="w-full p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] outline-none focus:border-[var(--c-accent-1)] transition-colors"
+        />
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="repoDesc" className="block text-sm font-medium text-[var(--c-text-1)]">Description (Optional)</label>
+        <input 
+          id="repoDesc" 
+          type="text" 
+          value={description} 
+          onChange={(e) => setDescription(e.target.value)} 
+          className="w-full p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] outline-none focus:border-[var(--c-accent-1)] transition-colors"
+        />
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="repoPath" className="block text-sm font-medium text-[var(--c-text-1)]">Full Local Path</label>
+        <div className="flex gap-2">
+          <input 
+            id="repoPath" 
+            type="text" 
+            value={path} 
+            placeholder="Click Browse to select a folder..." 
+            readOnly 
+            className="flex-1 p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] outline-none"
+          />
+          <button 
+            type="button" 
+            onClick={handleBrowse}
+            className="px-4 py-3 bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-2)] transition-colors"
+          >
+            Browse...
+          </button>
         </div>
       </div>
-      <div className={styles.formGroup}><label htmlFor="project">Assign to Project</label><select id="project" value={projectId} onChange={(e) => setProjectId(e.target.value)} disabled={isOffline || projects.length === 0} className={styles.select}>
-          {isOffline ? (<option>Cannot fetch projects while offline</option>) : projects.length > 0 ? (projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)) : (<option>No projects found for your account</option>)}
-        </select></div>
-      <div className={styles.buttonGroup}><button type="button" onClick={onCancel} className={styles.cancelBtn}>Cancel</button><button type="submit" className={styles.submitBtn} disabled={isOffline || isSubmitting}>Register Repository</button></div>
+      <div className="space-y-2">
+        <label htmlFor="project" className="block text-sm font-medium text-[var(--c-text-1)]">Assign to Project</label>
+        <select 
+          id="project" 
+          value={projectId} 
+          onChange={(e) => setProjectId(e.target.value)} 
+          disabled={isOffline || projects.length === 0} 
+          className="w-full p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] outline-none focus:border-[var(--c-accent-1)] transition-colors disabled:opacity-50"
+        >
+          {isOffline ? (
+            <option>Cannot fetch projects while offline</option>
+          ) : projects.length > 0 ? (
+            projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)
+          ) : (
+            <option>No projects found for your account</option>
+          )}
+        </select>
+      </div>
+      <div className="flex gap-3 pt-4">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="flex-1 px-4 py-2 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] transition-colors"
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          className="flex-1 px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+          disabled={isOffline || isSubmitting}
+        >
+          Register Repository
+        </button>
+      </div>
     </form>
   )
 }
