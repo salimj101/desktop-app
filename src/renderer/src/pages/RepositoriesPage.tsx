@@ -15,6 +15,7 @@ type Repository = {
   unsyncedCommits?: number
 }
 import toast from 'react-hot-toast'
+import { RefreshCw } from 'lucide-react'
 import Modal from '../components/Modal'
 import RegisterRepoForm from '../components/RegisterRepoForm'
 import RepoDetailModal from '../components/RepoDetailModal'
@@ -104,33 +105,41 @@ function RepositoriesPage({ projectId, onBack }: RepositoriesPageProps): React.J
   return (
     <>
       <div>
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
             {projectId && (
-              <button onClick={onBack} className="bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border-1)] px-4 py-2 rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90">
-                ← All Projects
+              <button
+                onClick={onBack}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--c-bg-3)] border border-[var(--c-border-1)] text-[var(--c-text-1)] hover:bg-[var(--c-bg-2)] transition-colors"
+                title="Back to all projects"
+              >
+                <span className="material-icons text-[18px]">arrow_back</span>
+                <span className="text-sm font-medium">All Projects</span>
               </button>
             )}
-            <h2 className="text-3xl">{projectId ? 'Repositories for Project' : 'All Repositories'}</h2>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--c-text-1)]">{projectId ? 'Repositories for Project' : 'All Repositories'}</h2>
           </div>
-          <div className="flex gap-4">
+
+          <div className="flex items-center gap-3">
             <button
               onClick={handleSyncAll}
-              className="bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border-1)] px-4 py-2 rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90"
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border border-[var(--c-border-1)] bg-[var(--c-bg-3)] text-[var(--c-text-1)] hover:bg-[var(--c-bg-2)] transition-colors ${isOffline ? 'opacity-60 pointer-events-none' : ''}`}
               disabled={isOffline}
-              style={isOffline ? { opacity: 0.6, pointerEvents: 'none' } : {}}
-              title={isOffline ? 'Offline: Action disabled' : undefined}
+              title={isOffline ? 'Offline: Action disabled' : 'Sync all active repositories'}
             >
-              Sync All
+              <RefreshCw className="w-4 h-4 text-[var(--c-text-1)]" />
+              <span className="text-sm font-medium">Sync All</span>
             </button>
+
             <button
               onClick={() => setModal('register')}
-              className="bg-[var(--c-accent-1)] text-white border-none px-4 py-2 rounded-md font-semibold cursor-pointer transition-opacity hover:opacity-90"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--c-accent-1)] text-white shadow-sm hover:shadow-md transition-all ${isOffline ? 'opacity-60 pointer-events-none' : ''}`}
               disabled={isOffline}
-              style={isOffline ? { opacity: 0.6, pointerEvents: 'none' } : {}}
-              title={isOffline ? 'Offline: Action disabled' : undefined}
+              title={isOffline ? 'Offline: Action disabled' : 'Add a new repository'}
             >
-              + Register New
+              <span className="material-icons text-[18px]">add</span>
+              <span className="text-sm font-semibold">Add Repository</span>
             </button>
           </div>
         </div>

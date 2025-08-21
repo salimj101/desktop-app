@@ -1,7 +1,6 @@
 // src/renderer/src/components/ThemeSwitcher.tsx
 import { useState, useEffect } from 'react'
 
-const ICONS = { Sun: '☀️', Moon: '🌙' }
 type Theme = 'light' | 'dark'
 
 function ThemeSwitcher(): React.JSX.Element {
@@ -24,10 +23,12 @@ function ThemeSwitcher(): React.JSX.Element {
   return (
     <button 
       onClick={toggleTheme} 
-      className="bg-transparent border border-[var(--c-border-1)] text-[var(--c-text-2)] rounded-full w-10 h-10 flex items-center justify-center cursor-pointer text-xl transition-colors hover:bg-[var(--c-bg-3)]" 
-      title="Toggle Theme"
+      className="bg-transparent border border-[var(--c-border-1)] text-[var(--c-text-2)] rounded-full w-10 h-10 flex items-center justify-center cursor-pointer transition-colors hover:bg-[var(--c-bg-3)] hover:text-[var(--c-text-1)]" 
+      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      {theme === 'light' ? ICONS.Moon : ICONS.Sun}
+      <span className="material-icons text-[20px]">
+        {theme === 'light' ? 'dark_mode' : 'light_mode'}
+      </span>
     </button>
   )
 }
