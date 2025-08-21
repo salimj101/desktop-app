@@ -5,7 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import cron from 'node-cron' // scheduler
 
 import { checkAndRefreshSession, login } from './lib/auth.service'
-import { clearSession } from './lib/database'
+import { clearSession, getSession } from './lib/database'
 import * as todoService from './lib/todo.service'
 import * as kanbanService from './lib/kanban.service' // Kanban service
 
@@ -47,12 +47,28 @@ function createWindow(): void {
   }
 
   // Re-check session when the window is focused
-  mainWindow.on('focus', () => {
+  mainWindow.on('focus', async () => {
+    // Avoid spamming logs when there is no session yet (e.g., on login screen)
+    const session = getSession()
+    if (!session) {
+      // Optionally notify renderer to ensure it stays on login screen
+      try {
+        mainWindow.webContents.send('session-expired')
+      } catch {}
+      return
+    }
+
     console.log('--- Window Focused: Validating session ---')
-    checkAndRefreshSession().catch((err) => {
-      console.error('Background session refresh failed:', (err as Error).message)
+    try {
+      await checkAndRefreshSession()
+    } catch (err) {
+      // Only log meaningful errors; suppress generic noise
+      const msg = (err as Error).message || 'Unknown error'
+      if (msg !== 'No active session.' && msg !== 'Session invalid') {
+        console.error('Background session refresh failed:', msg)
+      }
       mainWindow.webContents.send('session-expired')
-    })
+    }
   })
 }
 

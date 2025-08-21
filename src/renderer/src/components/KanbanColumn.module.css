@@ -1,0 +1,89 @@
+.kanbanColumn {
+  background-color: var(--c-bg-2);
+  border: 1px solid var(--c-border-1);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 320px;
+  height: fit-content;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.columnHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--c-border-1);
+}
+
+.columnTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--c-text-1);
+  margin: 0;
+}
+
+.columnActions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.kanbanColumn:hover .columnActions {
+  opacity: 1;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--c-text-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--c-bg-3);
+  color: var(--c-text-1);
+}
+
+.addCardButton {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--c-bg-3);
+  border: 2px dashed var(--c-border-1);
+  border-radius: 6px;
+  color: var(--c-text-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.addCardButton:hover {
+  background-color: var(--c-bg-4);
+  border-color: var(--c-accent-1);
+  color: var(--c-accent-1);
+}
+
+.columnContent {
+  min-height: 100px;
+}
+
+.dropIndicator {
+  height: 4px;
+  background-color: var(--c-accent-1);
+  border-radius: 2px;
+  margin: 4px 0;
+  transition: all 0.2s ease;
+}
+
+.dropIndicator.active {
+  height: 8px;
+  background-color: var(--c-accent-2);
+}

@@ -1,18 +1,48 @@
-/* src/renderer/src/components/ThemeSwitcher.module.css */
-.themeToggle {
-  background: none;
-  border: 1px solid var(--c-border-1);
-  color: var(--c-text-2);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+.themeSwitcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.themeButton {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.2s;
-}
-.themeToggle:hover {
+  border-radius: 6px;
   background-color: var(--c-bg-3);
+  color: var(--c-text-2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.themeButton:hover {
+  background-color: var(--c-bg-4);
+  color: var(--c-text-1);
+}
+
+.themeButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--c-accent-1);
+}
+
+.themeIcon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.themeButton:hover .themeIcon {
+  transform: scale(1.1);
+}
+
+.themeButton.active {
+  background-color: var(--c-accent-1);
+  color: white;
+}
+
+.themeButton.active:hover {
+  background-color: var(--c-accent-2);
 }

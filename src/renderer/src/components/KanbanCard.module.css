@@ -1,26 +1,76 @@
-.card {
+.kanbanCard {
   background-color: var(--c-bg-2);
-  padding: 1rem;
-  border-radius: 5px;
-  margin-bottom: 0.75rem;
-  box-shadow: 0 1px 3px var(--c-shadow);
-  word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  border: 1px solid var(--c-border-1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
   cursor: grab;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  border-left: 3px solid transparent;
-  color: var(--c-text-1);
-  position: relative; /* Ensure proper stacking */
-  z-index: 1; /* Prevent overlap issues */
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-.card:hover {
-  box-shadow: 0 4px 8px var(--c-shadow);
-  border-left-color: var(--c-accent-1);
+
+.kanbanCard:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
-.card:active {
+
+.kanbanCard:active {
   cursor: grabbing;
+}
+
+.cardTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--c-text-1);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.cardDescription {
+  font-size: 0.75rem;
+  color: var(--c-text-2);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.cardMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--c-text-3);
+}
+
+.cardActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.kanbanCard:hover .cardActions {
+  opacity: 1;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--c-text-2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--c-bg-3);
+  color: var(--c-text-1);
+}
+
+.editButton:hover {
+  color: var(--c-accent-1);
+}
+
+.deleteButton:hover {
+  color: var(--c-danger);
 }

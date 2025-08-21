@@ -1,8 +1,8 @@
 // src/renderer/src/App.tsx
 import { useState, useEffect } from 'react'
-import { User } from '../../preload/index.d'
-import LoginPage from './pages/LoginPage'
-import MainLayout from './pages/MainLayout'
+import { User } from './types'
+import LoginPage from './features/auth/LoginPage'
+import MainLayout from './layouts/MainLayout'
 import { Toaster } from 'react-hot-toast' // Import the Toaster component
 
 function App(): React.JSX.Element {

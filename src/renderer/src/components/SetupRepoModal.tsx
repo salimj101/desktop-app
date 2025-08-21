@@ -1,70 +1,75 @@
 import { useState } from 'react'
-import toast from 'react-hot-toast'
+import { Modal } from './Modal'
 
-function SetupRepoModal({ remoteRepo, onSuccess, onCancel }): React.JSX.Element {
-  const [path, setPath] = useState('')
+interface SetupRepoModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
+  repoPath: string
+}
 
-  const handleBrowse = async () => {
-    const result = await window.api.selectDirectory();
-    if (result.success && result.path) setPath(result.path);
-  }
+export function SetupRepoModal({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  repoPath 
+}: SetupRepoModalProps): React.JSX.Element {
+  const [isSettingUp, setIsSettingUp] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!path) return toast.error("Please select the local path for this repository.");
-
-    // The remoteRepo object from getRepositoriesView now has the fingerprint
-    const promise = window.api.setupMissingLocalRepo({ remoteRepo: { ...remoteRepo, path }, localPath: path });
-
-    toast.promise(promise, {
-      loading: 'Validating and setting up repository...',
-      success: (result) => {
-        if (result.success) { onSuccess(); return "Repository setup complete!"; }
-        throw new Error(result.error);
-      },
-      error: (err) => `Setup failed: ${err.message}`
-    });
+  const handleSetup = async () => {
+    setIsSettingUp(true)
+    try {
+      // Call the setup repository API
+      const result = await window.api.setupRepo(repoPath)
+      if (result.success) {
+        onSuccess()
+        onClose()
+      }
+    } catch (error) {
+      console.error('Failed to setup repository:', error)
+    } finally {
+      setIsSettingUp(false)
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-xl font-semibold text-[var(--c-text-1)] mb-2">Setup Local Repository</h2>
-      <p className="text-sm text-[var(--c-text-2)] mb-4">Please locate the local folder for <strong className="text-[var(--c-text-1)]">{remoteRepo.name}</strong>.</p>
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-[var(--c-text-1)]">Local Path</label>
-        <div className="flex gap-2">
-          <input 
-            type="text" 
-            value={path} 
-            placeholder="Click Browse to select..." 
-            readOnly 
-            className="flex-1 p-3 bg-[var(--c-bg-2)] border border-[var(--c-border)] rounded text-[var(--c-text-1)] outline-none"
-          />
-          <button 
-            type="button" 
-            onClick={handleBrowse}
-            className="px-4 py-3 bg-[var(--c-bg-3)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-2)] transition-colors"
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="bg-[var(--c-bg-1)] p-6 rounded-lg max-w-md w-full">
+        <h2 className="text-xl font-semibold text-[var(--c-text-1)] mb-4">
+          Setup Repository
+        </h2>
+        
+        <div className="mb-6">
+          <p className="text-[var(--c-text-2)] mb-3">
+            The repository at the following path needs to be set up:
+          </p>
+          <div className="bg-[var(--c-bg-2)] p-3 rounded border border-[var(--c-border-1)]">
+            <code className="text-sm text-[var(--c-text-1)] break-all">
+              {repoPath}
+            </code>
+          </div>
+        </div>
+
+        <p className="text-[var(--c-text-2)] mb-6">
+          This will initialize the repository tracking and sync it with your account.
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleSetup}
+            disabled={isSettingUp}
+            className="flex-1 bg-[var(--c-accent-1)] text-white border-none py-2 px-4 rounded font-medium cursor-pointer hover:opacity-90 disabled:opacity-50"
           >
-            Browse...
+            {isSettingUp ? 'Setting up...' : 'Setup Repository'}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 bg-[var(--c-bg-3)] text-[var(--c-text-2)] border-none py-2 px-4 rounded font-medium cursor-pointer hover:bg-[var(--c-bg-4)]"
+          >
+            Cancel
           </button>
         </div>
       </div>
-      <div className="flex gap-3 pt-4">
-        <button 
-          type="button" 
-          onClick={onCancel} 
-          className="flex-1 px-4 py-2 bg-[var(--c-bg-2)] text-[var(--c-text-1)] border border-[var(--c-border)] rounded hover:bg-[var(--c-bg-3)] transition-colors"
-        >
-          Cancel
-        </button>
-        <button 
-          type="submit"
-          className="flex-1 px-4 py-2 bg-[var(--c-accent-1)] text-white rounded hover:bg-[var(--c-accent-2)] transition-colors"
-        >
-          Validate & Save
-        </button>
-      </div>
-    </form>
+    </Modal>
   )
 }
-export default SetupRepoModal
