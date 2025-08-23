@@ -67,13 +67,31 @@ export interface Todo {
 }
 
 export interface User {
-  _id: string
-  username: string
+  userId: string
   email: string
+  userType: string
 }
 
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
   error?: string
+}
+
+// New interfaces for dashboard and repositories
+export interface DashboardStats {
+  totalRepositories: number
+  totalCommits: number
+  totalBranches: number
+  synced: number
+  unsynced: number
+}
+
+export interface RepositoryStatus {
+  id: string
+  name: string
+  path: string
+  branches: number
+  lastCommit: string
+  status: 'missing_local' | 'synced' | 'unsynced'
 }

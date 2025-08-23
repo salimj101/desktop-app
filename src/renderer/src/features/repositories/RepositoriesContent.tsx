@@ -8,13 +8,45 @@ import {
   Calendar
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { RepositoryStatus } from '../../types'
-import { mockRepositoryStatus } from '../../data/mockRepositoryStatus'
 
-export default function RepositoriesPage() {
+interface Repository {
+  id: string
+  name: string
+  path: string
+  branches: number
+  lastCommit: string
+  status: 'missing_local' | 'synced' | 'unsynced'
+}
+
+export default function RepositoriesContent() {
   const { isDark } = useTheme()
   const [searchQuery, setSearchQuery] = useState('')
-  const [repositories, setRepositories] = useState<RepositoryStatus[]>(mockRepositoryStatus)
+  const [repositories, setRepositories] = useState<Repository[]>([
+    {
+      id: '1',
+      name: 'a2sv-project',
+      path: 'D:\\Projects\\a2sv-project',
+      branches: 3,
+      lastCommit: '2 days ago',
+      status: 'missing_local'
+    },
+    {
+      id: '2',
+      name: 'a2sv-starter--project-g69',
+      path: 'E:\\a2sv-starter--project-g69',
+      branches: 1,
+      lastCommit: '1 week ago',
+      status: 'missing_local'
+    },
+    {
+      id: '3',
+      name: 'E-commerce-API',
+      path: 'D:\\Projects\\E-commerce-API',
+      branches: 5,
+      lastCommit: '3 days ago',
+      status: 'missing_local'
+    }
+  ])
 
   const handleSyncAll = async () => {
     // TODO: Implement sync all repositories
@@ -129,14 +161,14 @@ export default function RepositoriesPage() {
                     </span>
                   </div>
                 </div>
-
-                <div className="flex flex-row gap-4 space-y-3">
+                
+                <div className="flex flex-col items-end space-y-3">
                   {/* Status Tag */}
-                    <span className={`px-3 py-1 rounded-2xl text-sm font-medium ${
-                      repo.status === 'missing_local'
-                        ? 'bg-red-100 text-red-800'
-                        : repo.status === 'synced'
-                        ? 'bg-green-100 text-green-800'
+                  <span className={`px-3 py-1 rounded text-sm font-medium ${
+                    repo.status === 'missing_local'
+                      ? 'bg-red-100 text-red-800'
+                      : repo.status === 'synced'
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-orange-100 text-orange-800'
                   }`}>
                     {repo.status === 'missing_local' ? 'missing_local' :

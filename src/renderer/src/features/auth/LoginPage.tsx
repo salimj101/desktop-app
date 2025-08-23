@@ -1,140 +1,205 @@
 import { useState } from 'react'
-import { User } from '../../types'
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
+import { useTheme } from '../../contexts/ThemeContext'
 
-/* Small inline SVG icons — small, crisp, theme-aware (use currentColor) */
-const EyeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path
-      d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-)
+interface LoginPageProps {
+  onLoginSuccess: (user: any) => void
+}
 
-const EyeOffIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-    <path
-      d="M3 3l18 18"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M10.5 10.5a2.5 2.5 0 0 0 3.5 3.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M2 12s4-7 10-7c2.14 0 4.16.5 5.92 1.36"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M21.5 16.5C20 17.7 17.9 18.5 15 18.5c-6 0-10-6-10-6 .9-1.3 2.3-2.7 4-3.7"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-)
-
-function LoginPage({
-  onLoginSuccess
-}: {
-  onLoginSuccess: (user: User) => void
-}): React.JSX.Element {
+export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  
+  const { theme, isDark } = useTheme()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     setIsLoading(true)
-    setError(null)
-    const result = await window.api.login({ email, password })
-    setIsLoading(false)
-    if (result.success && result.user) onLoginSuccess(result.user)
-    else setError(result.error || 'An unknown error occurred.')
+
+    try {
+      const result = await window.api.login({ email, password })
+      
+      if (result.success && result.user) {
+        onLoginSuccess(result.user)
+      } else {
+        setError(result.error || 'Login failed. Please try again.')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[var(--c-bg-1)] relative before:content-[''] before:absolute before:w-[250vmin] before:h-[250vmin] before:top-1/2 before:left-1/2 before:transform before:-translate-x-1/2 before:-translate-y-1/2 before:bg-[radial-gradient(circle,var(--c-bg-2)_0%,var(--c-bg-1)_50%)] before:z-[1]">
-      <div className="flex items-center justify-center w-full bg-transparent">
-        <div className="w-full max-w-[400px] p-10 bg-[var(--c-bg-2)] rounded-lg border border-[var(--c-border-1)] shadow-[0_10px_25px_var(--c-shadow)] relative z-[2]">
-          {/* App brand pinned top-left */}
-          <div className="absolute top-3 left-4 text-sm font-bold text-[var(--c-accent-1)] select-none">GitTracker</div>
+    <div className={`min-h-screen flex items-center justify-center p-6 transition-colors duration-300 ${
+      isDark ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-10 ${
+          isDark ? 'bg-blue-600' : 'bg-blue-400'
+        }`}></div>
+        <div className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-10 ${
+          isDark ? 'bg-purple-600' : 'bg-purple-400'
+        }`}></div>
+      </div>
 
-          {/* Main login title */}
-          <h2 className="m-0 mb-6 text-center text-[22px] font-semibold text-[var(--c-text-1)]">Developer Login</h2>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <div className="relative mb-2">
-              <label htmlFor="email" className="block mb-[6px] text-[13px] text-[var(--c-text-2)]">Email</label>
-              <input
-                autoComplete="username"
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full py-3 px-0 text-[15px] text-[var(--c-text-1)] border-none border-b border-[var(--c-border-2)] outline-none bg-transparent mt-0"
-              />
-            </div>
-
-            <div className="relative mb-2">
-              <label htmlFor="password" className="block mb-[6px] text-[13px] text-[var(--c-text-2)]">Password</label>
-              <div className="relative flex items-center">
-                <input
-                  autoComplete="current-password"
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="flex-1 py-3 px-0 pr-9 text-[15px] text-[var(--c-text-1)] border-none border-b border-[var(--c-border-2)] outline-none bg-transparent mt-0"
-                />
-                <button
-                  type="button"
-                  className="absolute right-[6px] top-1/2 transform -translate-y-1/2 w-7 h-7 inline-flex items-center justify-center bg-transparent border-none p-0 m-0 cursor-pointer text-[var(--c-text-2)] rounded hover:text-[var(--c-accent-1)] focus:text-[var(--c-accent-1)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(0,0,0,0.03)]"
-                  onClick={() => setShowPassword((s) => !s)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  title={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-            </div>
-
-            {error && <p className="text-[var(--c-danger)] text-center mb-2 text-[13px]">{error}</p>}
-
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full py-3 px-5 text-base font-semibold text-[var(--c-button-text)] bg-[var(--c-button-bg)] border border-[var(--c-border-1)] rounded-md cursor-pointer transition-all duration-150 hover:bg-[var(--c-button-hover-bg)] hover:transform hover:-translate-y-px disabled:bg-[var(--c-border-1)] disabled:cursor-not-allowed disabled:opacity-70"
+      {/* Main Login Card */}
+      <div className={`relative w-full max-w-sm p-8 rounded-3xl shadow-2xl transition-all duration-300 ${
+        isDark 
+          ? 'bg-gray-800 border border-gray-700 shadow-gray-900/50' 
+          : 'bg-white border border-gray-200 shadow-gray-200/50'
+      }`}>
+        {/* GitTracker Logo */}
+        <div className="flex justify-center mb-8">
+          <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
+            <svg 
+              className="w-12 h-12 text-white" 
+              viewBox="0 0 24 24" 
+              fill="currentColor"
             >
-              {isLoading ? 'Verifying...' : 'Login'}
-            </button>
-          </form>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+        </div>
 
-          {/* Signup placeholder */}
-          <p className="mt-4 text-center text-[13px] text-[var(--c-text-2)]">
-            Don't have an account? <a href="#" className="text-[var(--c-accent-1)] no-underline font-semibold hover:underline">Sign up (coming soon)</a>
+        {/* Header Text */}
+        <div className="text-center mb-10">
+          <h1 className={`text-3xl font-bold mb-3 transition-colors duration-300 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
+            Welcome back
+          </h1>
+          <p className={`text-base transition-colors duration-300 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            Sign in to your GitTracker account
           </p>
         </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email Field */}
+          <div>
+            <label className={`block text-sm font-semibold mb-2 transition-colors duration-300 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Email
+            </label>
+            <div className="relative">
+              <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+              />
+            </div>
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <label className={`block text-sm font-semibold mb-2 transition-colors duration-300 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Password
+            </label>
+            <div className="relative">
+              <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                className={`w-full pl-10 pr-12 py-3 border-2 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-lg transition-colors duration-300 hover:bg-gray-100 ${
+                  isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-100'
+                }`}
+              >
+                {showPassword ? (
+                  <EyeOff className={`w-4 h-4 transition-colors duration-300 ${
+                    isDark ? 'text-gray-400' : 'text-gray-500'
+                  }`} />
+                ) : (
+                  <Eye className={`w-4 h-4 transition-colors duration-300 ${
+                    isDark ? 'text-gray-400' : 'text-gray-500'
+                  }`} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Remember Me */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="remember-me"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className={`w-4 h-4 rounded border-2 transition-colors duration-300 focus:ring-2 focus:ring-blue-500 ${
+                isDark 
+                  ? 'bg-gray-700 border-gray-600 text-blue-600' 
+                  : 'bg-white border-gray-300 text-blue-600'
+              }`}
+            />
+            <label htmlFor="remember-me" className={`ml-2 text-sm transition-colors duration-300 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Remember me
+            </label>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Sign In Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full py-3 px-4 bg-blue-600 text-white font-semibold text-base rounded-xl transition-all duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${
+              isDark ? 'focus:ring-offset-gray-800' : 'focus:ring-offset-white'
+            }`}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+
+      {/* Bottom Left Icon */}
+      <div className={`absolute bottom-8 left-8 w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
+        isDark ? 'bg-gray-700' : 'bg-gray-800'
+      }`}>
+        <span className="text-white font-bold text-sm">N</span>
       </div>
     </div>
   )
 }
-export default LoginPage

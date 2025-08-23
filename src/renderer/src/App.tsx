@@ -4,19 +4,9 @@ import { User } from './types'
 import LoginPage from './features/auth/LoginPage'
 import MainLayout from './layouts/MainLayout'
 import { Toaster } from 'react-hot-toast' // Import the Toaster component
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App(): React.JSX.Element {
-  // This useEffect for theming is perfect, no changes needed.
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    if (savedTheme) {
-      document.documentElement.setAttribute('data-theme', savedTheme)
-    } else {
-      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
-    }
-  }, [])
-
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -57,27 +47,27 @@ function App(): React.JSX.Element {
   // The login/logout logic in MainLayout is already passing the correct function.
   // The onLoginSuccess prop for LoginPage is also correct.
   return (
-    <>
+    <ThemeProvider>
       {/* THE KEY ADDITION: The Toaster component is added here */}
       {/* It will listen for toast() calls from anywhere in the app */}
       <Toaster
         position="bottom-right"
         toastOptions={{
           style: {
-            background: 'var(--c-bg-3)', // Use our theme variable for the background
-            color: 'var(--c-text-1)',      // Use our theme variable for the text
-            border: '1px solid var(--c-border-1)',
+            background: '#ffffff',
+            color: '#1f2937',
+            border: '1px solid #e5e7eb',
           },
           success: {
             iconTheme: {
               primary: '#2ecc71', // Green for success
-              secondary: 'var(--c-bg-2)',
+              secondary: '#ffffff',
             },
           },
           error: {
             iconTheme: {
-              primary: 'var(--c-danger)', // Red for error
-              secondary: 'var(--c-bg-2)',
+              primary: '#ef4444', // Red for error
+              secondary: '#ffffff',
             },
           },
         }}
@@ -88,7 +78,7 @@ function App(): React.JSX.Element {
       ) : (
         <LoginPage onLoginSuccess={setUser} />
       )}
-    </>
+    </ThemeProvider>
   )
 }
 
