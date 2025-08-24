@@ -1,0 +1,58 @@
+import React from 'react'
+import { GitBranch, Clock } from 'lucide-react'
+
+interface Project {
+  id: string
+  name: string
+  description: string
+  repoCount: number
+  lastUpdated: string
+  status: string
+}
+
+const statusColors: Record<string, string> = {
+  Active: '#22C55E',
+  Inactive: '#F59E42'
+}
+
+const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+  return (
+    <div className="bg-[#F8FAFC] rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col gap-4 min-w-[340px]">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
+            {project.name[0]}
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">{project.name}</h2>
+            <p className="text-sm text-gray-500">{project.description}</p>
+          </div>
+        </div>
+        <span className="px-3 py-1 rounded-lg bg-green-500 text-white text-xs font-semibold">
+          {project.status}
+        </span>
+      </div>
+      <div className="flex items-center gap-6 text-gray-700 text-sm">
+        <div className="flex items-center gap-2">
+          <GitBranch className="h-5 w-5 text-blue-600" />
+          <span className="font-medium text-base">{project.repoCount}</span>
+          <span className="text-xs text-gray-500">Repositories</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-gray-400" />
+          <span className="text-xs text-gray-500">Last updated {project.lastUpdated}</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <a
+          href="#"
+          className="text-blue-600 font-medium hover:underline text-sm flex items-center gap-1"
+        >
+          View Project <span className="project-link-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  )
+}
+
+export default ProjectCard
