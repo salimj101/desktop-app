@@ -4,6 +4,8 @@ import SharedLayout from './SharedLayout'
 import DashboardPage from '../features/dashboard/DashboardPage'
 import RepositoriesPage from '../features/repositories/RepositoriesPage'
 import RepoHealthPage from '../features/repo-health/RepoHealthPage'
+import ProjectsPage from '@renderer/features/projects/ProjectsPage'
+import KanbanBoard from '@renderer/features/kanban/KanbanBoard'
 
 interface MainContentProps {
   onLogout: () => void
@@ -22,9 +24,11 @@ export default function MainContent({ onLogout }: MainContentProps) {
       case 'repoHealth':
         return <RepoHealthPage />
       case 'projects':
+        return <ProjectsPage />
+      case 'kanban':
+        return <KanbanBoard />
       case 'commits':
       case 'todo':
-      case 'kanban':
       case 'publicBoards':
         // TODO: Implement other pages
         return (
