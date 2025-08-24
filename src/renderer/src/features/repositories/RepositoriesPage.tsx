@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { 
   Search,
   Plus,
@@ -9,12 +9,46 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { RepositoryStatus } from '../../types'
-import { mockRepositoryStatus } from '../../data/mockRepositoryStatus'
+import RegisterRepoForm from './RegisterRepoForm'
 
 export default function RepositoriesPage() {
   const { isDark } = useTheme()
   const [searchQuery, setSearchQuery] = useState('')
-  const [repositories, setRepositories] = useState<RepositoryStatus[]>(mockRepositoryStatus)
+  const [repositories, setRepositories] = useState<RepositoryStatus[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+
+  const fetchRepositories = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const result = await window.api.getRepositoriesView()
+      if (result && result.success) {
+        // Ensure repositories is always an array and conforms to RepositoryStatus
+        const repos: RepositoryStatus[] = (result.repositories || []).map((repo: any) => ({
+          id: repo.id,
+          name: repo.name,
+          path: repo.path,
+          branches: repo.branches ?? 0,
+          lastCommit: repo.lastCommit ?? 'N/A',
+          status: repo.status ?? 'unsynced',
+        }));
+        setRepositories(repos);
+      } else {
+        setError(result?.error || 'Failed to fetch repositories.')
+      }
+    } catch (err) {
+      console.error('Error fetching repositories:', err)
+      setError(err instanceof Error ? err.message : 'An unknown error occurred.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRepositories()
+  }, [])
 
   const handleSyncAll = async () => {
     // TODO: Implement sync all repositories
@@ -22,8 +56,7 @@ export default function RepositoriesPage() {
   }
 
   const handleAddRepository = () => {
-    // TODO: Implement add repository
-    console.log('Add repository clicked')
+    setIsRegisterModalOpen(true)
   }
 
   const handleSetupRepository = (repoId: string) => {
@@ -32,8 +65,8 @@ export default function RepositoriesPage() {
   }
 
   const filteredRepositories = repositories.filter(repo =>
-    repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    repo.path.toLowerCase().includes(searchQuery.toLowerCase())
+    (repo.name && repo.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (repo.path && repo.path.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   return (
@@ -97,7 +130,15 @@ export default function RepositoriesPage() {
 
         {/* Repository List */}
         <div className="space-y-4">
-          {filteredRepositories.map((repo) => (
+          {isLoading ? (
+            <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Loading repositories...</p>
+          ) : error ? (
+            <div className="text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300 p-4 rounded-lg">
+              <p className="font-bold">Error</p>
+              <p>{error}</p>
+            </div>
+          ) : filteredRepositories.length > 0 ? (
+            filteredRepositories.map((repo) => (
             <div key={repo.id} className={`p-6 rounded-xl transition-colors duration-300 ${
               isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
             } shadow-sm`}>
@@ -129,18 +170,37 @@ export default function RepositoriesPage() {
                     </span>
                   </div>
                 </div>
-
-                <div className="flex flex-row gap-4 space-y-3">
+                
+                <div className="flex flex-col items-end space-y-3">
                   {/* Status Tag */}
-                    <span className={`px-3 py-1 rounded-2xl text-sm font-medium ${
-                      repo.status === 'missing_local'
-                        ? 'bg-red-100 text-red-800'
-                        : repo.status === 'synced'
-                        ? 'bg-green-100 text-green-800'
-                      : 'bg-orange-100 text-orange-800'
-                  }`}>
-                    {repo.status === 'missing_local' ? 'missing_local' :
-                     repo.status === 'synced' ? 'synced' : 'unsynced'}
+                  <span
+                    className={`px-3 py-1 rounded text-sm font-medium ${(() => {
+                      switch (repo.status) {
+                        case 'synced':
+                        case 'ok':
+                          return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                        case 'missing_local':
+                        case 'missing':
+                        case 'deleted':
+                          return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                        case 'unsynced':
+                        case 'moved':
+                        case 'fingerprint_mismatch':
+                        default:
+                          return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+                      }
+                    })()}`}
+                  >
+                    {(() => {
+                      switch (repo.status) {
+                        case 'missing_local':
+                          return 'Missing Local'
+                        case 'fingerprint_mismatch':
+                          return 'Mismatch'
+                        default:
+                          return repo.status.charAt(0).toUpperCase() + repo.status.slice(1)
+                      }
+                    })()}
                   </span>
                   
                   {/* Setup Button */}
@@ -154,9 +214,25 @@ export default function RepositoriesPage() {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+          ) : (
+            <div className={`text-center p-8 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+              <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>No Repositories Found</h3>
+              <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Click 'Add Repository' to get started.
+              </p>
+            </div>
+          )}
         </div>
       </main>
+      {isRegisterModalOpen && (
+        <RegisterRepoForm
+          onClose={() => setIsRegisterModalOpen(false)}
+          onRepoRegistered={() => {
+            fetchRepositories() // Refresh the list after a new repo is added
+          }}
+        />
+      )}
     </div>
   )
 }
