@@ -1,6 +1,7 @@
 // Shared types for the Git Tracker Desktop App
 
 export interface Repository {
+  health: any
   _id: string
   name: string
   description?: string
