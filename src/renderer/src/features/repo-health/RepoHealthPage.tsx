@@ -55,10 +55,25 @@ export default function RepoHealthPage() {
     }
   }
 
+  const handleSyncRepo = async (repoId: string) => {
+    toast.loading('Checking repository status...', { id: `sync-${repoId}` })
+    try {
+      const result = await (window.api as any).syncRepoStatus(repoId)
+      if (result.success) {
+        toast.success('Repository status updated.', { id: `sync-${repoId}` })
+        fetchRepoHealthData() // Refresh the list
+      } else {
+        toast.error(result.error || 'Failed to sync repository.', { id: `sync-${repoId}` })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred.'
+      toast.error(message, { id: `sync-${repoId}` })
+    }
+  }
+
   const handleSetupRepo = async (repo: Repository) => {
     toast.loading('Setting up repository...', { id: `setup-${repo._id}` })
     try {
-      // 1. Ask user to select a parent directory
       const dirResult = await (window.api as any).selectDirectory()
       if (!dirResult.success) {
         if (dirResult.error !== 'Dialog canceled') {
@@ -69,7 +84,6 @@ export default function RepoHealthPage() {
         return
       }
 
-      // 2. Call backend to clone/setup the repo
       const setupResult = await (window.api as any).setupMissingLocalRepo({
         repoId: repo._id,
         parentPath: dirResult.path
@@ -91,7 +105,7 @@ export default function RepoHealthPage() {
 
   const issues = useMemo(() => {
     return repositories
-      .filter((repo) => !repo.health.isHealthy)
+      .filter((repo) => repo.health && !repo.health.isHealthy) // FIX: Ensure repo.health exists
       .map((repo) => {
         const problems: string[] = []
         if (repo.health.localPathMissing) problems.push('Repository not found at local path.')
@@ -104,39 +118,18 @@ export default function RepoHealthPage() {
   }, [repositories])
 
   const healthStats = useMemo(() => {
-    const healthy = repositories.filter((r) => r.health.isHealthy).length
+    const healthy = repositories.filter((r) => r.health?.isHealthy).length // FIX: Use optional chaining
     const total = repositories.length
     const issuesCount = total - healthy
-    // A simple warning definition could be repos that are healthy but need a push/pull
     const warnings = repositories.filter(
-      (r) => r.health.isHealthy && (r.health.needsPull || r.health.needsPush)
+      (r) => r.health?.isHealthy && (r.health?.needsPull || r.health?.needsPush) // FIX: Use optional chaining
     ).length
 
     return [
-      {
-        value: healthy,
-        label: 'Healthy',
-        icon: <ShieldCheck className="w-8 h-8 text-green-500" />,
-        color: 'text-green-500'
-      },
-      {
-        value: warnings,
-        label: 'Warnings',
-        icon: <AlertTriangle className="w-8 h-8 text-yellow-500" />,
-        color: 'text-yellow-500'
-      },
-      {
-        value: issuesCount,
-        label: 'Issues',
-        icon: <XCircle className="w-8 h-8 text-red-500" />,
-        color: 'text-red-500'
-      },
-      {
-        value: total,
-        label: 'Total Repos',
-        icon: <GitCompare className="w-8 h-8 text-blue-500" />,
-        color: 'text-blue-500'
-      }
+      { value: healthy, label: 'Healthy', icon: <ShieldCheck className="w-8 h-8 text-green-500" />, color: 'text-green-500' },
+      { value: warnings, label: 'Warnings', icon: <AlertTriangle className="w-8 h-8 text-yellow-500" />, color: 'text-yellow-500' },
+      { value: issuesCount, label: 'Issues', icon: <XCircle className="w-8 h-8 text-red-500" />, color: 'text-red-500' },
+      { value: total, label: 'Total Repos', icon: <GitCompare className="w-8 h-8 text-blue-500" />, color: 'text-blue-500' }
     ]
   }, [repositories])
 
@@ -207,7 +200,9 @@ export default function RepoHealthPage() {
                 }`}
               >
                 <ShieldCheck className="w-16 h-16 text-green-500 mb-4" />
-                <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <h3
+                  className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
+                >
                   All repositories are healthy!
                 </h3>
                 <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -222,45 +217,74 @@ export default function RepoHealthPage() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    <h3
+                      className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}
+                    >
                       {issue.name}
                     </h3>
                     <p
-                      className={`text-sm font-mono ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
+                      className={`text-sm font-mono ${
+                        isDark ? 'text-gray-400' : 'text-gray-500'
+                      }`}
                     >
-                      {issue.path}
+                      {issue.path || 'Path not available'} {/* FIX: Use path */}
                     </p>
                   </div>
                   <span
                     className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                      isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-800'
+                      issue.health?.localPathMissing // FIX: Use optional chaining
+                        ? isDark
+                          ? 'bg-red-900 text-red-300'
+                          : 'bg-red-100 text-red-800'
+                        : isDark
+                        ? 'bg-yellow-900 text-yellow-300'
+                        : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
-                    {issue.health.localPathMissing ? 'Missing' : 'Issue'}
+                    {issue.health?.localPathMissing ? 'Missing' : 'Issue'}
                   </span>
                 </div>
                 <div>
                   <h4
-                    className={`font-semibold mb-2 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}
+                    className={`font-semibold mb-2 ${
+                      isDark ? 'text-gray-200' : 'text-gray-800'
+                    }`}
                   >
                     Issues Found:
                   </h4>
                   <ul className="list-disc list-inside space-y-1">
                     {issue.problems.map((problem, i) => (
-                      <li key={i} className={`text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                      <li
+                        key={i}
+                        className={`text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}
+                      >
                         {problem}
                       </li>
                     ))}
                   </ul>
                 </div>
-                {issue.health.localPathMissing && (
-                  <button
-                    onClick={() => handleSetupRepo(issue)}
-                    className="mt-6 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Setup Repository
-                  </button>
-                )}
+                <div className="mt-6">
+                  {issue.health?.localPathMissing ? ( // FIX: Use optional chaining
+                    <button
+                      onClick={() => handleSetupRepo(issue)}
+                      className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Setup Repository
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleSyncRepo(issue._id)}
+                      className={`w-full flex items-center justify-center space-x-2 py-2 rounded-lg transition-colors ${
+                        isDark
+                          ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                          : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      }`}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Re-check Status</span>
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
