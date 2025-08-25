@@ -13,6 +13,7 @@ import {
 import { useTheme } from '../../contexts/ThemeContext'
 import { Repository, DashboardStats } from '../../types'
 import { toast } from 'react-hot-toast'
+import RegisterRepoForm from '../repositories/RegisterRepoForm'
 
 export default function DashboardPage() {
   const { isDark } = useTheme()
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [repositories, setRepositories] = useState<Repository[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
 
   const fetchDashboardData = async () => {
     setIsLoading(true)
@@ -47,13 +49,25 @@ export default function DashboardPage() {
   }, [])
 
   const handleRegisterRepo = () => {
-    // TODO: Implement repository registration
-    console.log('Register repository clicked')
+    setIsRegisterModalOpen(true)
   }
 
-  const handleCheckRepoStatus = () => {
-    // TODO: Implement repository status check
-    console.log('Check repo status clicked')
+  const handleCheckRepoStatus = async () => {
+    toast.loading('Checking all repository statuses...', { id: 'repo-status-check' })
+    try {
+      const result = await (window.api as any).checkAllRepoHealth()
+      if (result.success) {
+        toast.success(`Checked ${result.totalChecked} repositories. Refreshing view...`, {
+          id: 'repo-status-check'
+        })
+        fetchDashboardData() // Refresh the dashboard data to show new statuses
+      } else {
+        throw new Error(result.error || 'Failed to check repository statuses.')
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred.'
+      toast.error(message, { id: 'repo-status-check' })
+    }
   }
 
   const handleViewDetails = (repoId: string) => {
@@ -339,6 +353,16 @@ export default function DashboardPage() {
           </div>
         )}
       </main>
+      {isRegisterModalOpen && (
+        <RegisterRepoForm
+          isOffline={false}
+          onCancel={() => setIsRegisterModalOpen(false)}
+          onSuccess={() => {
+            setIsRegisterModalOpen(false)
+            fetchDashboardData()
+          }}
+        />
+      )}
     </div>
   )
 }
