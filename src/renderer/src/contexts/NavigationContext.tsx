@@ -1,6 +1,12 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 
-export type PageType = 'dashboard' | 'repositories' | 'projects' | 'repoHealth' | 'commits' | 'todo' | 'kanban' | 'publicBoards'
+export type PageType =
+  | 'dashboard'
+  | 'repositories'
+  | 'projects'
+  | 'repoHealth'
+  | 'commits'
+  | 'kanban'
 
 interface NavigationContextType {
   currentPage: PageType

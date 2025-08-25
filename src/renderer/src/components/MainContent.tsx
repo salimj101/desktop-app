@@ -28,8 +28,6 @@ export default function MainContent({ onLogout }: MainContentProps) {
       case 'kanban':
         return <KanbanBoard />
       case 'commits':
-      case 'todo':
-      case 'publicBoards':
         // TODO: Implement other pages
         return (
           <div className={`min-h-screen transition-colors duration-300 ${
