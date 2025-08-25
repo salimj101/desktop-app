@@ -6,6 +6,7 @@ import RepositoriesPage from '../features/repositories/RepositoriesPage'
 import RepoHealthPage from '../features/repo-health/RepoHealthPage'
 import ProjectsPage from '@renderer/features/projects/ProjectsPage'
 import KanbanBoard from '@renderer/features/kanban/KanbanBoard'
+import CommitsPage from '@renderer/features/commits/CommitsPage'
 
 interface MainContentProps {
   onLogout: () => void
@@ -28,6 +29,7 @@ export default function MainContent({ onLogout }: MainContentProps) {
       case 'kanban':
         return <KanbanBoard />
       case 'commits':
+        return <CommitsPage />
         // TODO: Implement other pages
         return (
           <div className={`min-h-screen transition-colors duration-300 ${
