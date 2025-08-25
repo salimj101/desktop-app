@@ -126,10 +126,30 @@ export default function RepoHealthPage() {
     ).length
 
     return [
-      { value: healthy, label: 'Healthy', icon: <ShieldCheck className="w-8 h-8 text-green-500" />, color: 'text-green-500' },
-      { value: warnings, label: 'Warnings', icon: <AlertTriangle className="w-8 h-8 text-yellow-500" />, color: 'text-yellow-500' },
-      { value: issuesCount, label: 'Issues', icon: <XCircle className="w-8 h-8 text-red-500" />, color: 'text-red-500' },
-      { value: total, label: 'Total Repos', icon: <GitCompare className="w-8 h-8 text-blue-500" />, color: 'text-blue-500' }
+      {
+        value: healthy,
+        label: 'Healthy',
+        icon: <ShieldCheck className="w-8 h-8 text-green-500" />,
+        color: 'text-green-500'
+      },
+      {
+        value: warnings,
+        label: 'Warnings',
+        icon: <AlertTriangle className="w-8 h-8 text-yellow-500" />,
+        color: 'text-yellow-500'
+      },
+      {
+        value: issuesCount,
+        label: 'Issues',
+        icon: <XCircle className="w-8 h-8 text-red-500" />,
+        color: 'text-red-500'
+      },
+      {
+        value: total,
+        label: 'Total Repos',
+        icon: <GitCompare className="w-8 h-8 text-blue-500" />,
+        color: 'text-blue-500'
+      }
     ]
   }, [repositories])
 
@@ -200,9 +220,7 @@ export default function RepoHealthPage() {
                 }`}
               >
                 <ShieldCheck className="w-16 h-16 text-green-500 mb-4" />
-                <h3
-                  className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
-                >
+                <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                   All repositories are healthy!
                 </h3>
                 <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -217,15 +235,11 @@ export default function RepoHealthPage() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3
-                      className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}
-                    >
+                    <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {issue.name}
                     </h3>
                     <p
-                      className={`text-sm font-mono ${
-                        isDark ? 'text-gray-400' : 'text-gray-500'
-                      }`}
+                      className={`text-sm font-mono ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
                     >
                       {issue.path || 'Path not available'} {/* FIX: Use path */}
                     </p>
@@ -237,8 +251,8 @@ export default function RepoHealthPage() {
                           ? 'bg-red-900 text-red-300'
                           : 'bg-red-100 text-red-800'
                         : isDark
-                        ? 'bg-yellow-900 text-yellow-300'
-                        : 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-yellow-900 text-yellow-300'
+                          : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
                     {issue.health?.localPathMissing ? 'Missing' : 'Issue'}
@@ -246,18 +260,13 @@ export default function RepoHealthPage() {
                 </div>
                 <div>
                   <h4
-                    className={`font-semibold mb-2 ${
-                      isDark ? 'text-gray-200' : 'text-gray-800'
-                    }`}
+                    className={`font-semibold mb-2 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}
                   >
                     Issues Found:
                   </h4>
                   <ul className="list-disc list-inside space-y-1">
                     {issue.problems.map((problem, i) => (
-                      <li
-                        key={i}
-                        className={`text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}
-                      >
+                      <li key={i} className={`text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                         {problem}
                       </li>
                     ))}
