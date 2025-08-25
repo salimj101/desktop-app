@@ -16,6 +16,7 @@ interface Repository {
   branches: number
   lastCommit: string
   status: 'missing_local' | 'synced' | 'unsynced'
+  syncStatus?: string // Added for new status display
 }
 
 export default function RepositoriesContent() {
@@ -164,25 +165,48 @@ export default function RepositoriesContent() {
                 
                 <div className="flex flex-col items-end space-y-3">
                   {/* Status Tag */}
-                  <span className={`px-3 py-1 rounded text-sm font-medium ${
-                    repo.status === 'missing_local'
-                      ? 'bg-red-100 text-red-800'
-                      : repo.status === 'synced'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-orange-100 text-orange-800'
-                  }`}>
-                    {repo.status === 'missing_local' ? 'missing_local' :
-                     repo.status === 'synced' ? 'synced' : 'unsynced'}
+                  <span className={`px-3 py-1 rounded text-sm font-medium ${(() => {
+                    // Show syncStatus first, then fall back to status
+                    const displayStatus = repo.syncStatus || repo.status
+                    switch (displayStatus) {
+                      case 'synced':
+                      case 'ok':
+                        return 'bg-green-100 text-green-800'
+                      case 'missing_local':
+                      case 'missing':
+                      case 'deleted':
+                        return 'bg-red-100 text-red-800'
+                      case 'unsynced':
+                      case 'moved':
+                      case 'fingerprint_mismatch':
+                      default:
+                        return 'bg-orange-100 text-orange-800'
+                    }
+                  })()}`}>
+                    {(() => {
+                      // Show syncStatus first, then fall back to status
+                      const displayStatus = repo.syncStatus || repo.status
+                      switch (displayStatus) {
+                        case 'missing_local':
+                          return 'Missing Local'
+                        case 'fingerprint_mismatch':
+                          return 'Mismatch'
+                        default:
+                          return displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)
+                      }
+                    })()}
                   </span>
                   
-                  {/* Setup Button */}
-                  <button
-                    onClick={() => handleSetupRepository(repo.id)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Setup</span>
-                  </button>
+                  {/* Setup Button - Only show when repository needs setup */}
+                  {(repo.syncStatus === 'missing_local' || repo.status === 'missing_local') && (
+                    <button
+                      onClick={() => handleSetupRepository(repo.id)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Setup</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

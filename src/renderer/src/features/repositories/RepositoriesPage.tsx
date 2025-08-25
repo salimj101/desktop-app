@@ -10,6 +10,9 @@ import {
 import { useTheme } from '../../contexts/ThemeContext'
 import { RepositoryStatus } from '../../types'
 import RegisterRepoForm from './RegisterRepoForm'
+import RepoDetailModal from './RepoDetailModal'
+import SetupRepoModal from './SetupRepoModal'
+import toast from 'react-hot-toast'
 
 export default function RepositoriesPage() {
   const { isDark } = useTheme()
@@ -18,6 +21,10 @@ export default function RepositoriesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [isOffline, setIsOffline] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [selectedRepo, setSelectedRepo] = useState<RepositoryStatus | null>(null)
+  const [setupRepo, setSetupRepo] = useState<RepositoryStatus | null>(null)
 
   const fetchRepositories = async () => {
     try {
@@ -27,20 +34,26 @@ export default function RepositoriesPage() {
       if (result && result.success) {
         // Ensure repositories is always an array and conforms to RepositoryStatus
         const repos: RepositoryStatus[] = (result.repositories || []).map((repo: any) => ({
-          id: repo.id,
+          id: repo.repoId ?? repo._id ?? repo.id,
           name: repo.name,
           path: repo.path,
           branches: repo.branches ?? 0,
           lastCommit: repo.lastCommit ?? 'N/A',
           status: repo.status ?? 'unsynced',
-        }));
-        setRepositories(repos);
+          syncStatus: repo.syncStatus || repo.status
+        }))
+        setRepositories(repos)
+        // backend can return a status flag when it's using offline/cache mode
+        setIsOffline(result.status === 'offline')
       } else {
         setError(result?.error || 'Failed to fetch repositories.')
+        setIsOffline(result?.status === 'offline')
       }
     } catch (err) {
       console.error('Error fetching repositories:', err)
       setError(err instanceof Error ? err.message : 'An unknown error occurred.')
+      // If IPC or network fails, assume offline and show cached UI
+      setIsOffline(true)
     } finally {
       setIsLoading(false)
     }
@@ -51,17 +64,54 @@ export default function RepositoriesPage() {
   }, [])
 
   const handleSyncAll = async () => {
-    // TODO: Implement sync all repositories
-    console.log('Sync all repositories clicked')
+    if (isOffline) {
+      toast.error('Cannot sync while offline.')
+      return
+    }
+    setActionLoading(true)
+    toast.loading('Starting sync for repositories...', { id: 'sync-all' })
+    try {
+      // Prefer a bulk IPC if the preload exposes it
+      const bulk = await (window.api as any).checkAllRepoHealth?.()
+      if (bulk && bulk.success) {
+        toast.success(bulk.message || 'All repositories checked.', { id: 'sync-all' })
+      } else {
+        // fallback: iterate and call syncCommits
+        const candidates = repositories.filter((r) => !!r.id)
+        let ok = 0
+        for (const r of candidates) {
+          try {
+            const res = await window.api.syncCommits(r.id)
+            if (res && res.success) ok++
+          } catch (e) {
+            console.warn('syncCommits failed for', r.id, e)
+          }
+        }
+        toast.success(`Sync complete: ${ok}/${candidates.length} repositories synced.`, {
+          id: 'sync-all'
+        })
+      }
+    } catch (err) {
+      console.error('Sync all error:', err)
+      toast.error('Sync failed: ' + (err instanceof Error ? err.message : String(err)), {
+        id: 'sync-all'
+      })
+    } finally {
+      setActionLoading(false)
+      fetchRepositories()
+    }
   }
 
   const handleAddRepository = () => {
     setIsRegisterModalOpen(true)
   }
 
-  const handleSetupRepository = (repoId: string) => {
-    // TODO: Implement repository setup
-    console.log('Setup repository:', repoId)
+  const handleSetupRepository = (repo: RepositoryStatus) => {
+    if (isOffline) {
+      toast.error('Cannot setup repository while offline.')
+      return
+    }
+    setSetupRepo(repo)
   }
 
   const filteredRepositories = repositories.filter(repo =>
@@ -74,6 +124,14 @@ export default function RepositoriesPage() {
       isDark ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
       <main className="flex-1 p-6">
+        {/* Offline banner */}
+        {isOffline && (
+          <div className={`p-3 mb-4 text-sm rounded-md ${
+            isDark ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            You are offline — some actions are disabled and cached data is shown.
+          </div>
+        )}
         {/* Page Title and Actions */}
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -89,6 +147,8 @@ export default function RepositoriesPage() {
           <div className="flex space-x-3">
             <button
               onClick={handleSyncAll}
+              disabled={isOffline || actionLoading}
+              style={isOffline || actionLoading ? { opacity: 0.6, pointerEvents: 'none' } : {}}
               className={`flex items-center space-x-2 px-4 py-2 border rounded-lg transition-colors duration-300 ${
                 isDark 
                   ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
@@ -100,6 +160,8 @@ export default function RepositoriesPage() {
             </button>
             <button
               onClick={handleAddRepository}
+              disabled={isOffline}
+              style={isOffline ? { opacity: 0.6, pointerEvents: 'none' } : {}}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
             >
               <Plus className="w-4 h-4" />
@@ -130,7 +192,7 @@ export default function RepositoriesPage() {
 
         {/* Repository List */}
         <div className="space-y-4">
-          {isLoading ? (
+            {isLoading ? (
             <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Loading repositories...</p>
           ) : error ? (
             <div className="text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300 p-4 rounded-lg">
@@ -139,7 +201,10 @@ export default function RepositoriesPage() {
             </div>
           ) : filteredRepositories.length > 0 ? (
             filteredRepositories.map((repo) => (
-            <div key={repo.id} className={`p-6 rounded-xl transition-colors duration-300 ${
+            <div
+              key={repo.id}
+              onClick={() => setSelectedRepo(repo)}
+              className={`p-6 rounded-xl transition-colors duration-300 ${
               isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
             } shadow-sm`}>
               <div className="flex justify-between items-start">
@@ -175,7 +240,9 @@ export default function RepositoriesPage() {
                   {/* Status Tag */}
                   <span
                     className={`px-3 py-1 rounded text-sm font-medium ${(() => {
-                      switch (repo.status) {
+                      // Show syncStatus first, then fall back to status
+                      const displayStatus = repo.syncStatus || repo.status
+                      switch (displayStatus) {
                         case 'synced':
                         case 'ok':
                           return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
@@ -192,25 +259,34 @@ export default function RepositoriesPage() {
                     })()}`}
                   >
                     {(() => {
-                      switch (repo.status) {
+                      // Show syncStatus first, then fall back to status
+                      const displayStatus = repo.syncStatus || repo.status
+                      switch (displayStatus) {
                         case 'missing_local':
                           return 'Missing Local'
                         case 'fingerprint_mismatch':
                           return 'Mismatch'
                         default:
-                          return repo.status.charAt(0).toUpperCase() + repo.status.slice(1)
+                          return displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)
                       }
                     })()}
                   </span>
                   
-                  {/* Setup Button */}
-                  <button
-                    onClick={() => handleSetupRepository(repo.id)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Setup</span>
-                  </button>
+                  {/* Setup Button - Only show when repository needs setup */}
+                  {(repo.syncStatus === 'missing_local' || repo.status === 'missing_local') && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleSetupRepository(repo)
+                      }}
+                      disabled={isOffline || actionLoading}
+                      style={isOffline || actionLoading ? { opacity: 0.6, pointerEvents: 'none' } : {}}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Setup</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -227,10 +303,32 @@ export default function RepositoriesPage() {
       </main>
       {isRegisterModalOpen && (
         <RegisterRepoForm
-          onClose={() => setIsRegisterModalOpen(false)}
-          onRepoRegistered={() => {
+          isOffline={isOffline}
+          onCancel={() => setIsRegisterModalOpen(false)}
+          onSuccess={() => {
             fetchRepositories() // Refresh the list after a new repo is added
+            setIsRegisterModalOpen(false)
           }}
+        />
+      )}
+      {selectedRepo && (
+        <RepoDetailModal
+          repoId={selectedRepo.id}
+          initialRepo={selectedRepo as any}
+          onClose={() => setSelectedRepo(null)}
+          onUpdate={() => fetchRepositories()}
+          isOffline={isOffline}
+        />
+      )}
+      {setupRepo && (
+        <SetupRepoModal
+          remoteRepo={setupRepo}
+          onSuccess={() => {
+            fetchRepositories() // Refresh the list after setup
+            setSetupRepo(null)
+          }}
+          onCancel={() => setSetupRepo(null)}
+          isOffline={isOffline}
         />
       )}
     </div>

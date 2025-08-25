@@ -4,7 +4,6 @@ interface RegisterRepoInput {
   name: string
   description?: string
   path: string
-  permission: 'read' | 'read-write'
 }
 
 interface FetchCommitsInput {
