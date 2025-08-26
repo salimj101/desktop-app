@@ -12,20 +12,28 @@ interface Project {
   status: string
 }
 
+interface ProjectCardProps {
+  project: Project
+  onClick: () => void
+}
+
 const statusColors: Record<string, string> = {
   Active: '#22C55E',
   Inactive: '#F59E42'
 }
 
-const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
   const { isDark } = useTheme()
   
   return (
-    <div className={`rounded-2xl shadow-sm border p-6 flex flex-col gap-4 min-w-[340px] transition-colors duration-300 ${
-      isDark 
-        ? 'bg-gray-800 border-gray-700' 
-        : 'bg-[#F8FAFC] border-gray-200'
-    }`}>
+    <div 
+      className={`rounded-2xl shadow-sm border p-6 flex flex-col gap-4 min-w-[340px] transition-colors duration-300 cursor-pointer hover:shadow-md ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700 hover:bg-gray-750' 
+          : 'bg-[#F8FAFC] border-gray-200 hover:bg-gray-50'
+      }`}
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
@@ -62,12 +70,15 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         </div>
       </div>
       <div className="flex items-center justify-between mt-2">
-        <a
-          href="#"
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onClick()
+          }}
           className="text-blue-600 font-medium hover:underline text-sm flex items-center gap-1"
         >
           View Project <span className="project-link-arrow">→</span>
-        </a>
+        </button>
       </div>
     </div>
   )
