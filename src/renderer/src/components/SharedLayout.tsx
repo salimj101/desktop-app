@@ -9,7 +9,8 @@ import {
   BarChart3,
   Moon,
   Sun,
-  LogOut
+  LogOut,
+  Menu
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useNavigation } from '../contexts/NavigationContext'
@@ -23,6 +24,7 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
   const { isDark, toggleTheme } = useTheme()
   const { currentPage, setCurrentPage } = useNavigation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const navigationItems = [
     { icon: Grid3X3, label: 'Dashboard', page: 'dashboard' as const },
@@ -39,9 +41,9 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
         isDark ? 'bg-gray-900' : 'bg-gray-50'
       }`}
     >
-      {/* Sidebar */}
-      <div
-        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 shadow-lg ${
+      {/* Sidebar - desktop */}
+      <aside
+        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} hidden md:block transition-all duration-300 shadow-lg ${
           isDark ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'
         }`}
       >
@@ -52,6 +54,7 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
             className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors duration-300 ${
               isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
             }`}
+            aria-label="Toggle sidebar"
           >
             <ChevronLeft
               className={`w-5 h-5 transition-transform duration-300 ${
@@ -86,11 +89,53 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
                 }`}
               >
                 <item.icon className="w-5 h-5" />
-                {!sidebarCollapsed && <span className="ml-3 font-medium">{item.label}</span>}
+                {!sidebarCollapsed && (
+                  <span className="ml-3 font-medium truncate">{item.label}</span>
+                )}
               </button>
             ))}
           </nav>
         </div>
+      </aside>
+
+      {/* Mobile sidebar (overlay) */}
+      <div className={`md:hidden ${mobileOpen ? 'block' : 'hidden'} fixed inset-0 z-40`}>
+        <div className={`absolute inset-0 bg-black/40`} onClick={() => setMobileOpen(false)} />
+        <aside
+          className={`absolute left-0 top-0 bottom-0 w-64 transition-transform transform ${
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          } ${isDark ? 'bg-gray-800' : 'bg-white'} p-4`}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              GitTracker
+            </h2>
+            <button onClick={() => setMobileOpen(false)} className="p-2">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          </div>
+          <nav className="space-y-2">
+            {navigationItems.map((item, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setCurrentPage(item.page)
+                  setMobileOpen(false)
+                }}
+                className={`w-full flex items-center p-3 rounded-lg transition-colors duration-300 ${
+                  currentPage === item.page
+                    ? 'bg-blue-600 text-white'
+                    : isDark
+                      ? 'text-gray-300 hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="ml-3 font-medium">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
       </div>
 
       {/* Main Content Area */}
@@ -101,8 +146,19 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
             isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
           }`}
         >
-          <div className="flex justify-between items-center px-6 py-4">
-            <div className="flex items-center">
+          <div className="flex justify-between items-center px-4 sm:px-6 py-3">
+            <div className="flex items-center gap-3">
+              {/* Mobile menu button */}
+              <button
+                className={`md:hidden p-2 rounded-md transition-colors duration-300 ${
+                  isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
               <h1
                 className={`text-xl font-bold transition-colors duration-300 ${
                   isDark ? 'text-white' : 'text-gray-900'
@@ -111,7 +167,7 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
                 GitTracker
               </h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -129,14 +185,14 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-300 bg-black text-white hover:bg-gray-800"
               >
                 <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+                <span className="hidden md:inline">Logout</span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
   )

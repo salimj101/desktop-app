@@ -155,17 +155,17 @@ export default function RepoHealthPage() {
 
   return (
     <div
-      className={`p-6 h-full transition-colors duration-300 ${
+      className={`max-w-7xl mx-auto p-4 sm:p-6 h-full transition-colors duration-300 ${
         isDark ? 'bg-gray-900' : 'bg-gray-50'
       }`}
     >
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
           Repository Health
         </h1>
         <button
           onClick={handleCheckAllRepos}
-          className={`flex items-center space-x-2 px-4 py-2 border rounded-lg transition-colors duration-300 ${
+          className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 border rounded-lg transition-colors duration-300 ${
             isDark
               ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
               : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -197,13 +197,13 @@ export default function RepoHealthPage() {
             {healthStats.map((stat, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-lg shadow-sm flex items-center space-x-4 ${
+                className={`p-4 sm:p-6 rounded-lg shadow-sm flex flex-col sm:flex-row items-start sm:items-center space-x-4 ${
                   isDark ? 'bg-gray-800' : 'bg-white'
                 }`}
               >
-                {stat.icon}
+                <div className="mb-3 sm:mb-0">{stat.icon}</div>
                 <div>
-                  <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <p className={`text-3xl sm:text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                   <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                     {stat.label}
                   </p>
@@ -212,10 +212,10 @@ export default function RepoHealthPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {issues.length === 0 && (
               <div
-                className={`lg:col-span-2 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center text-center ${
+                className={`md:col-span-2 p-4 sm:p-6 rounded-lg shadow-sm flex flex-col items-center justify-center text-center ${
                   isDark ? 'bg-gray-800' : 'bg-white'
                 }`}
               >
@@ -231,15 +231,15 @@ export default function RepoHealthPage() {
             {issues.map((issue) => (
               <div
                 key={issue._id}
-                className={`p-6 rounded-lg shadow-sm ${isDark ? 'bg-gray-800' : 'bg-white'}`}
+                className={`p-4 sm:p-6 rounded-lg shadow-sm ${isDark ? 'bg-gray-800' : 'bg-white'}`}
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                  <div className="flex-1 min-w-0">
                     <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {issue.name}
                     </h3>
                     <p
-                      className={`text-sm font-mono ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
+                      className={`text-sm font-mono break-words ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
                     >
                       {issue.path || 'Path not available'} {/* FIX: Use path */}
                     </p>
@@ -272,18 +272,18 @@ export default function RepoHealthPage() {
                     ))}
                   </ul>
                 </div>
-                <div className="mt-6">
-                  {issue.health?.localPathMissing ? ( // FIX: Use optional chaining
+                <div className="mt-4 sm:mt-6">
+                  {issue.health?.localPathMissing ? (
                     <button
                       onClick={() => handleSetupRepo(issue)}
-                      className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="w-full sm:w-auto block bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       Setup Repository
                     </button>
                   ) : (
                     <button
                       onClick={() => handleSyncRepo(issue._id)}
-                      className={`w-full flex items-center justify-center space-x-2 py-2 rounded-lg transition-colors ${
+                      className={`w-full sm:w-auto block flex items-center justify-center space-x-2 py-2 rounded-lg transition-colors ${
                         isDark
                           ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                           : 'bg-gray-200 hover:bg-gray-300 text-gray-700'

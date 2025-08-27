@@ -5,7 +5,7 @@ import ProjectsFilterBar from '../projects/ProjectsFilterBar'
 import ProjectCard from './ProjectCard'
 import ProjectRepositoriesPage from './ProjectRepositoriesPage'
 import '../../assets/main.css'
-import { useTheme} from '../../contexts/ThemeContext'
+import { useTheme } from '../../contexts/ThemeContext'
 
 // Updated Project interface to include the repositories array
 interface Project {
@@ -19,7 +19,7 @@ interface Project {
 
 const ProjectsPage: React.FC = () => {
   // Assuming useTheme provides a simple string 'dark' or 'light'
-  const { isDark} = useTheme()
+  const { isDark } = useTheme()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -75,7 +75,7 @@ const ProjectsPage: React.FC = () => {
 
   return (
     <div
-      className={`px-12 pt-10 pb-4 w-full min-h-screen transition-colors duration-300 ${
+      className={`max-w-7xl mx-auto p-4 sm:p-6 min-h-screen transition-colors duration-300 ${
         isDark ? 'bg-gray-900' : 'bg-gray-50'
       }`}
     >
@@ -86,22 +86,24 @@ const ProjectsPage: React.FC = () => {
       >
         Projects
       </h1>
-      <p className={`text-lg transition-colors duration-300 ${
-        isDark ? 'text-gray-400' : 'text-gray-600'
-      } mb-8`}>
+      <p
+        className={`text-lg transition-colors duration-300 ${
+          isDark ? 'text-gray-400' : 'text-gray-600'
+        } mb-6`}
+      >
         Manage and track your development projects
       </p>
-      <div className="flex gap-4 mb-8">
+
+      <div className="mb-6 w-full">
         <ProjectsFilterBar />
       </div>
+
       {loading ? (
-        <div className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-          Loading projects...
-        </div>
+        <div className={isDark ? 'text-gray-400' : 'text-gray-600'}>Loading projects...</div>
       ) : error ? (
         <div className="text-red-500">{error}</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => {
             const repoCount = project.repositories.length
 
@@ -114,7 +116,7 @@ const ProjectsPage: React.FC = () => {
                   description: project.description,
                   repoCount,
                   lastUpdated: project.lastUpdated,
-                  status: project.status,
+                  status: project.status
                 }}
                 onClick={() => handleProjectClick(project)}
               />

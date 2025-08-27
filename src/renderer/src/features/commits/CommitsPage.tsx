@@ -119,9 +119,9 @@ export default function CommitsPage() {
 
   // --- REPOSITORIES VIEW ---
   const renderRepositoriesView = () => (
-    <div className="flex-1 p-6">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6">
       {renderBreadcrumb()}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Repository Commits</h1>
           <p className="text-gray-600">View and manage commits across all repositories</p>
@@ -132,7 +132,7 @@ export default function CommitsPage() {
         </div>
       </div>
       <div className="mb-6">
-        <div className="relative">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
@@ -152,14 +152,14 @@ export default function CommitsPage() {
               setNavigation({ view: 'commits', repoId: repo.repoId, repoName: repo.repoName })
             }
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+              <div className="flex items-center gap-3 mb-3 sm:mb-0">
                 <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
                   <Folder className="w-4 h-4 text-blue-600" />
                 </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">{repo.repoName}</h3>
-                  <p className="text-sm text-gray-600">
+                <div className="min-w-0">
+                  <h3 className="font-medium text-gray-900 truncate">{repo.repoName}</h3>
+                  <p className="text-sm text-gray-600 truncate">
                     {repo.totalCommits} commit(s) found in local database.
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export default function CommitsPage() {
 
   // --- COMMITS LIST VIEW ---
   const renderCommitsView = () => (
-    <div className="flex-1 p-6">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6">
       {renderBreadcrumb()}
       <div className="flex items-center gap-4 mb-6">
         <button
@@ -208,7 +208,7 @@ export default function CommitsPage() {
         </div>
       </div>
       <div className="mb-6">
-        <div className="relative">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
@@ -233,12 +233,12 @@ export default function CommitsPage() {
               })
             }
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+              <div className="flex items-center gap-3 mb-3 sm:mb-0">
                 <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-mono">
                   {commit.commitHash.substring(0, 8)}
                 </div>
-                <span className="text-gray-900">{commit.message}</span>
+                <span className="text-gray-900 truncate">{commit.message}</span>
               </div>
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-1">
@@ -276,7 +276,7 @@ export default function CommitsPage() {
     const changedFiles = JSON.parse(currentCommitDetail.changes || '[]')
 
     return (
-      <div className="flex-1 p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {renderBreadcrumb()}
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -298,12 +298,12 @@ export default function CommitsPage() {
           </div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Commit Hash</label>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                  <span className="bg-gray-100 px-2 py-1 rounded text-sm font-mono truncate">
                     {currentCommitDetail.commitHash}
                   </span>
                 </div>
@@ -345,7 +345,7 @@ export default function CommitsPage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-4 mt-6 pt-4 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 pt-4 border-t border-gray-200">
             <div className="flex items-center gap-1 text-green-600">
               <Plus className="w-4 h-4" />
               <span className="font-medium">{stats.additions || 0}</span>
@@ -366,9 +366,9 @@ export default function CommitsPage() {
           <div className="space-y-4">
             {changedFiles.map((file, index) => (
               <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
-                <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-mono text-gray-900">{file.file}</span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
+                  <div className="flex items-center gap-3 mb-2 sm:mb-0">
+                    <span className="text-sm font-mono text-gray-900 truncate">{file.file}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3 text-sm">
