@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   Plus,
@@ -34,32 +34,68 @@ export default function DashboardContent() {
   const { isDark } = useTheme()
   const [searchQuery, setSearchQuery] = useState('')
   const [stats, setStats] = useState<DashboardStats>({
-    totalRepositories: 4,
-    totalCommits: 39,
-    totalBranches: 14,
-    synced: 2,
-    unsynced: 2
+    totalRepositories: 0,
+    totalCommits: 0,
+    totalBranches: 0,
+    synced: 0,
+    unsynced: 0
   })
   const [repositories, setRepositories] = useState<Repository[]>([
-    {
-      id: '1',
-      name: 'a2sv-project',
-      description: 'Main development project',
-      status: 'synced',
-      commits: 4,
-      branches: 3,
-      lastSync: '2 hours ago'
-    },
-    {
-      id: '2',
-      name: 'a2sv-starter--project-g69',
-      description: 'Starter template project',
-      status: 'unsynced',
-      commits: 12,
-      branches: 5,
-      lastSync: '1 day ago'
-    }
+    // will populate from API
   ])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    const fetchData = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const res = await (window.api as any).getRepositoriesView()
+        const payload = res && res.success ? res.data : res
+
+        let repos: any[] = []
+        if (Array.isArray(payload)) repos = payload
+        else if (payload && Array.isArray(payload.repositories)) repos = payload.repositories
+        else if (payload && Array.isArray(payload.repos)) repos = payload.repos
+        else if (payload && Array.isArray(payload.data)) repos = payload.data
+
+        const mapped: Repository[] = repos.map((r: any, idx: number) => ({
+          id: r.id ?? r.repoId ?? String(idx),
+          name: r.name ?? r.repoName ?? r.displayName ?? 'Unknown',
+          description: r.description ?? r.desc ?? r.summary ?? '',
+          status:
+            (r.status as 'synced' | 'unsynced') ??
+            (r.synced ? 'synced' : r.isSynced ? 'synced' : 'unsynced'),
+          commits: Number(r.commits ?? r.totalCommits ?? r.commitCount ?? 0) || 0,
+          branches: Number(r.branches ?? r.totalBranches ?? r.branchCount ?? 0) || 0,
+          lastSync: r.lastSync ?? r.syncedAt ?? r.last_synced ?? ''
+        }))
+
+        if (!mounted) return
+
+        setRepositories(mapped)
+
+        const totalRepositories = mapped.length
+        const totalCommits = mapped.reduce((s, it) => s + (Number(it.commits) || 0), 0)
+        const totalBranches = mapped.reduce((s, it) => s + (Number(it.branches) || 0), 0)
+        const synced = mapped.filter((it) => it.status === 'synced').length
+        const unsynced = totalRepositories - synced
+
+        setStats({ totalRepositories, totalCommits, totalBranches, synced, unsynced })
+      } catch (err: any) {
+        setError(err?.message ?? 'Failed to load dashboard data')
+      } finally {
+        if (mounted) setIsLoading(false)
+      }
+    }
+
+    fetchData()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const handleRegisterRepo = () => {
     // TODO: Implement repository registration

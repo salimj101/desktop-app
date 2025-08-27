@@ -29,11 +29,53 @@ export default function DashboardPage() {
     setError(null)
     try {
       const result = await (window.api as any).getRepositoriesView()
-      if (result.success) {
-        setRepositories(result.repositories)
+
+      // Normalize payload
+      const payload = result && result.success ? (result.data ?? result) : result
+
+      // repositories could be: array, payload.repositories, payload.repos, payload.data
+      let repos: any[] = []
+      if (Array.isArray(payload)) repos = payload
+      else if (payload && Array.isArray(payload.repositories)) repos = payload.repositories
+      else if (payload && Array.isArray(payload.repos)) repos = payload.repos
+      else if (payload && Array.isArray(payload.data)) repos = payload.data
+
+      // defensive mapping to Repository type in `types`
+      const mapped = repos.map((r: any) => ({
+        _id: r._id ?? r.id ?? r.repoId ?? String(Math.random()).slice(2),
+        name: r.name ?? r.repoName ?? r.displayName ?? 'Unknown',
+        description: r.description ?? r.desc ?? r.summary ?? '',
+        path: r.path ?? r.localPath ?? '',
+        projectId: r.projectId ?? r.project?._id ?? r.project_id ?? '',
+        projectName: r.projectName ?? r.project?.name ?? '',
+        lastSync: r.lastSync ?? r.syncedAt ?? r.last_synced ?? '',
+        status: (r.status as any) ?? (r.isActive ? 'active' : r.status) ?? 'inactive',
+        health: r.health ?? r.repoHealth ?? {}
+      }))
+
+      setRepositories(mapped)
+
+      // stats may be provided directly
+      if (result && typeof result.stats !== 'undefined') {
         setStats(result.stats)
+      } else if (payload && payload.stats) {
+        setStats(payload.stats)
       } else {
-        throw new Error(result.error || 'Failed to fetch dashboard data.')
+        // compute fallback stats from mapped repos
+        const totalRepositories = mapped.length
+        const totalCommits = mapped.reduce(
+          (s, it) => s + Number(it.health?.commits ?? 0),
+          0
+        )
+        const totalBranches = mapped.reduce(
+          (s, it) => s + Number(it.health?.branches ?? 0),
+          0
+        )
+        const synced = mapped.filter(
+          (it) => it.health?.synced === true || it.status === 'active'
+        ).length
+        const unsynced = totalRepositories - synced
+        setStats({ totalRepositories, totalCommits, totalBranches, synced, unsynced })
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.'
