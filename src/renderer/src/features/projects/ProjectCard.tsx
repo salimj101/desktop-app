@@ -32,7 +32,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0
+          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
             {project.name[0]}
           </div>
           <div className="min-w-0">
