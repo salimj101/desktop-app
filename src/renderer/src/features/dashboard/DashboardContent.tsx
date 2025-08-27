@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { 
+import {
   Search,
   Plus,
   RefreshCw,
@@ -86,43 +86,50 @@ export default function DashboardContent() {
     console.log('Sync repo:', repoId)
   }
 
-  const filteredRepositories = repositories.filter(repo =>
-    repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    repo.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRepositories = repositories.filter(
+    (repo) =>
+      repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      repo.description.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDark ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
-      <main className="flex-1 p-6">
+    <div
+      className={`max-w-7xl mx-auto p-4 sm:p-6 transition-colors duration-300 ${
+        isDark ? 'bg-gray-900' : 'bg-gray-50'
+      }`}
+    >
+      <main className="flex-1">
         {/* Page Title and Actions */}
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>Dashboard</h1>
-            <p className={`text-lg transition-colors duration-300 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
+            <h1
+              className={`text-3xl font-bold mb-2 transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}
+            >
+              Dashboard
+            </h1>
+            <p
+              className={`text-lg transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}
+            >
               Overview of your registered repositories and sync status.
             </p>
           </div>
-          <div className="flex space-x-3">
-            <Link href='\features\repositories\RegisterRepoForm.tsx'>
-              <button
-                onClick={handleRegisterRepo}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
-              >
-                <Plus className="w-4 h-4" />
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+            <button
+              onClick={handleRegisterRepo}
+              className="w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+            >
+              <Plus className="w-4 h-4" />
               <span>Register Repository</span>
             </button>
-            </Link>
             <button
               onClick={handleCheckRepoStatus}
-              className={`flex items-center space-x-2 px-4 py-2 border rounded-lg transition-colors duration-300 ${
-                isDark 
-                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+              className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2 border rounded-lg transition-colors duration-300 ${
+                isDark
+                  ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -133,41 +140,88 @@ export default function DashboardContent() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
           {[
-            { label: 'Total Repositories', value: stats.totalRepositories, subtitle: 'Registered repositories', icon: Link, color: 'blue' },
-            { label: 'Total Commits', value: stats.totalCommits, subtitle: 'Across all repositories', icon: GitCommit, color: 'purple' },
-            { label: 'Total Branches', value: stats.totalBranches, subtitle: 'Across all repositories', icon: GitBranch, color: 'indigo' },
-            { label: 'Synced', value: stats.synced, subtitle: 'Up to date', icon: CheckCircle, color: 'green' },
-            { label: 'Unsynced', value: stats.unsynced, subtitle: 'Need attention', icon: AlertTriangle, color: 'orange' }
+            {
+              label: 'Total Repositories',
+              value: stats.totalRepositories,
+              subtitle: 'Registered repositories',
+              icon: Link,
+              color: 'blue'
+            },
+            {
+              label: 'Total Commits',
+              value: stats.totalCommits,
+              subtitle: 'Across all repositories',
+              icon: GitCommit,
+              color: 'purple'
+            },
+            {
+              label: 'Total Branches',
+              value: stats.totalBranches,
+              subtitle: 'Across all repositories',
+              icon: GitBranch,
+              color: 'indigo'
+            },
+            {
+              label: 'Synced',
+              value: stats.synced,
+              subtitle: 'Up to date',
+              icon: CheckCircle,
+              color: 'green'
+            },
+            {
+              label: 'Unsynced',
+              value: stats.unsynced,
+              subtitle: 'Need attention',
+              icon: AlertTriangle,
+              color: 'orange'
+            }
           ].map((card, index) => (
-            <div key={index} className={`p-6 rounded-xl transition-colors duration-300 ${
-              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-            } shadow-sm`}>
+            <div
+              key={index}
+              className={`p-4 sm:p-6 rounded-xl transition-colors duration-300 ${
+                isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              } shadow-sm`}
+            >
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <p className={`text-sm font-medium transition-colors duration-300 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
+                  <p
+                    className={`text-sm font-medium transition-colors duration-300 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}
+                  >
                     {card.label}
                   </p>
-                  <p className={`text-2xl font-bold mt-1 transition-colors duration-300 ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>{card.value}</p>
+                  <p
+                    className={`text-2xl font-bold mt-1 transition-colors duration-300 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}
+                  >
+                    {card.value}
+                  </p>
                 </div>
-                <div className={`p-2 rounded-lg ${
-                  card.color === 'green' ? 'bg-green-100 text-green-600' :
-                  card.color === 'orange' ? 'bg-orange-100 text-orange-600' :
-                  card.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                  card.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                  'bg-indigo-100 text-indigo-600'
-                }`}>
+                <div
+                  className={`p-2 rounded-lg ${
+                    card.color === 'green'
+                      ? 'bg-green-100 text-green-600'
+                      : card.color === 'orange'
+                        ? 'bg-orange-100 text-orange-600'
+                        : card.color === 'blue'
+                          ? 'bg-blue-100 text-blue-600'
+                          : card.color === 'purple'
+                            ? 'bg-purple-100 text-purple-600'
+                            : 'bg-indigo-100 text-indigo-600'
+                  }`}
+                >
                   <card.icon className="w-5 h-5" />
                 </div>
               </div>
-              <p className={`text-sm transition-colors duration-300 ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
+              <p
+                className={`text-sm transition-colors duration-300 ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}
+              >
                 {card.subtitle}
               </p>
             </div>
@@ -177,17 +231,19 @@ export default function DashboardContent() {
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
-              isDark ? 'text-gray-400' : 'text-gray-500'
-            }`} />
+            <Search
+              className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`}
+            />
             <input
               type="text"
               placeholder="Search repositories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                isDark 
-                  ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                isDark
+                  ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                   : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
               }`}
             />
@@ -197,20 +253,29 @@ export default function DashboardContent() {
         {/* Repository List */}
         <div className="space-y-4">
           {filteredRepositories.map((repo) => (
-            <div key={repo.id} className={`p-6 rounded-xl transition-colors duration-300 ${
-              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-            } shadow-sm`}>
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
+            <div
+              key={repo.id}
+              className={`p-4 sm:p-6 rounded-xl transition-colors duration-300 ${
+                isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              } shadow-sm`}
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-3 mb-2">
-                    <h3 className={`text-xl font-semibold transition-colors duration-300 ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}>{repo.name}</h3>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      repo.status === 'synced'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
+                    <h3
+                      className={`text-xl font-semibold transition-colors duration-300 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}
+                    >
+                      {repo.name}
+                    </h3>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        repo.status === 'synced'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-orange-100 text-orange-800'
+                      }`}
+                    >
                       {repo.status === 'synced' ? (
                         <span className="flex items-center">
                           <CheckCircle className="w-4 h-4 mr-1" />
@@ -224,14 +289,18 @@ export default function DashboardContent() {
                       )}
                     </span>
                   </div>
-                  <p className={`mb-3 transition-colors duration-300 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
+                  <p
+                    className={`mb-3 transition-colors duration-300 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}
+                  >
                     {repo.description}
                   </p>
-                  <div className={`flex items-center space-x-6 text-sm transition-colors duration-300 ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
+                  <div
+                    className={`flex flex-wrap items-center gap-4 text-sm transition-colors duration-300 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}
+                  >
                     <span className="flex items-center">
                       <GitCommit className="w-4 h-4 mr-2" />
                       {repo.commits} commits
@@ -246,12 +315,12 @@ export default function DashboardContent() {
                     </span>
                   </div>
                 </div>
-                <div className="flex space-x-2 ml-4">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 ml-0 sm:ml-4 w-full sm:w-auto">
                   <button
                     onClick={() => handleViewDetails(repo.id)}
-                    className={`px-4 py-2 border rounded-lg transition-colors duration-300 ${
-                      isDark 
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                    className={`w-full sm:w-auto px-4 py-2 border rounded-lg transition-colors duration-300 ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                         : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -260,9 +329,9 @@ export default function DashboardContent() {
                   {repo.status === 'synced' ? (
                     <button
                       onClick={() => handleRefreshRepo(repo.id)}
-                      className={`px-4 py-2 border rounded-lg transition-colors duration-300 ${
-                        isDark 
-                          ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                      className={`w-full sm:w-auto px-4 py-2 border rounded-lg transition-colors duration-300 ${
+                        isDark
+                          ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                           : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -271,7 +340,7 @@ export default function DashboardContent() {
                   ) : (
                     <button
                       onClick={() => handleSyncNow(repo.id)}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-300"
+                      className="w-full sm:w-auto px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-300"
                     >
                       Sync Now
                     </button>
