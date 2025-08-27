@@ -195,11 +195,11 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       </div>
 
       {/* Bottom Left Icon */}
-      <div className={`absolute bottom-8 left-8 w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
+      {/* <div className={`absolute bottom-8 left-8 w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
         isDark ? 'bg-gray-700' : 'bg-gray-800'
       }`}>
         <span className="text-white font-bold text-sm">N</span>
-      </div>
+      </div> */}
     </div>
   )
 }

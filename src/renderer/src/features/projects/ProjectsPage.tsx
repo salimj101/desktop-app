@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import ProjectsFilterBar from '../projects/ProjectsFilterBar'
 import ProjectCard from './ProjectCard'
+import ProjectRepositoriesPage from './ProjectRepositoriesPage'
 import '../../assets/main.css'
 import { useTheme } from '../../contexts/ThemeContext'
 
@@ -22,6 +23,7 @@ const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,6 +52,26 @@ const ProjectsPage: React.FC = () => {
     }
     fetchData()
   }, [])
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project)
+  }
+
+  const handleBackToProjects = () => {
+    setSelectedProject(null)
+  }
+
+  // If a project is selected, show the project repositories page
+  if (selectedProject) {
+    return (
+      <ProjectRepositoriesPage
+        projectId={selectedProject.projectId}
+        projectName={selectedProject.name}
+        projectDescription={selectedProject.description}
+        onBack={handleBackToProjects}
+      />
+    )
+  }
 
   return (
     <div
@@ -96,6 +118,7 @@ const ProjectsPage: React.FC = () => {
                   lastUpdated: project.lastUpdated,
                   status: project.status
                 }}
+                onClick={() => handleProjectClick(project)}
               />
             )
           })}

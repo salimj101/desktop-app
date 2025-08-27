@@ -11,12 +11,17 @@ interface Project {
   status: string
 }
 
+interface ProjectCardProps {
+  project: Project
+  onClick: () => void
+}
+
 const statusColors: Record<string, string> = {
   Active: '#22C55E',
   Inactive: '#F59E42'
 }
 
-const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
   const { isDark } = useTheme()
 
   return (
@@ -27,7 +32,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0
             {project.name[0]}
           </div>
           <div className="min-w-0">
@@ -80,13 +85,16 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           </span>
         </div>
       </div>
-      <div className="mt-2">
-        <a
-          href="#"
+      <div className="flex items-center justify-between mt-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onClick()
+          }}
           className="text-blue-600 font-medium hover:underline text-sm flex items-center gap-1"
         >
           View Project <span className="project-link-arrow">→</span>
-        </a>
+        </button>
       </div>
     </div>
   )

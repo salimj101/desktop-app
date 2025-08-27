@@ -1,6 +1,15 @@
-"use client"
-import React, { useState } from 'react'
-import useTheme from '../../hooks/useTheme'
+import React, { useState, useEffect } from 'react'
+import { 
+  Search, 
+  Plus, 
+  Filter,
+  MoreHorizontal,
+  Edit3,
+  Trash2,
+  Eye
+} from 'lucide-react'
+import { useTheme } from '../../contexts/ThemeContext'
+import toast from 'react-hot-toast'
 
 type Priority = "Low" | "Medium" | "High"
 type Status = "To Do" | "In Progress" | "Review" | "Done"
@@ -11,6 +20,22 @@ interface Task {
   description: string
   priority: Priority
   status: Status
+  boardId?: string
+}
+
+interface Board {
+  id: string
+  name: string
+  description?: string
+  isPublic: boolean
+  columns: Column[]
+}
+
+interface Column {
+  id: string
+  name: string
+  order: number
+  cards: Task[]
 }
 
 const initialTasks: Task[] = [
@@ -54,19 +79,20 @@ const initialTasks: Task[] = [
 const columns: Status[] = ["To Do", "In Progress", "Review", "Done"]
 
 const priorityColors = {
-  Low: "bg-green-100 text-green-800 border border-green-200",
-  Medium: "bg-yellow-100 text-yellow-800 border border-yellow-200",
-  High: "bg-red-100 text-red-800 border border-red-200",
+  Low: "bg-green-100 text-green-800 border border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-700",
+  Medium: "bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700",
+  High: "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900 dark:text-red-300 dark:border-red-700",
 }
 
 const columnColors = {
-  "To Do": "border-t-gray-400",
-  "In Progress": "border-t-yellow-400",
-  Review: "border-t-blue-400",
-  Done: "border-t-green-400",
+  "To Do": "border-t-gray-400 dark:border-t-gray-500",
+  "In Progress": "border-t-yellow-400 dark:border-t-yellow-500",
+  Review: "border-t-blue-400 dark:border-t-blue-500",
+  Done: "border-t-green-400 dark:border-t-green-500",
 }
 
 export default function KanbanBoard() {
+  const { isDark } = useTheme()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -74,12 +100,46 @@ export default function KanbanBoard() {
   const [addingToColumn, setAddingToColumn] = useState<Status>("To Do")
   const [searchTerm, setSearchTerm] = useState("")
   const [priorityFilter, setPriorityFilter] = useState<Priority | "All">("All")
+  const [boards, setBoards] = useState<Board[]>([])
+  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false)
+  const [isCreatingBoard, setIsCreatingBoard] = useState(false)
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     priority: "Medium" as Priority,
   })
+
+  const [boardFormData, setBoardFormData] = useState({
+    name: "",
+    visibility: "private" as "private" | "public",
+    columns: ["To Do", "In Progress", "Review", "Done"]
+  })
+
+  // Fetch boards on component mount
+  useEffect(() => {
+    const fetchBoards = async () => {
+      try {
+        setIsLoading(true)
+        const result = await (window.api as any).getBoards?.()
+        if (result && result.success) {
+          setBoards(result.data || [])
+          if (result.data && result.data.length > 0) {
+            setSelectedBoard(result.data[0])
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch boards:', error)
+        toast.error('Failed to fetch boards')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBoards()
+  }, [])
 
   const handleDragStart = (e: React.DragEvent, task: Task) => {
     setDraggedTask(task)
@@ -91,45 +151,128 @@ export default function KanbanBoard() {
     e.dataTransfer.dropEffect = "move"
   }
 
-  const handleDrop = (e: React.DragEvent, status: Status) => {
+  const handleDrop = async (e: React.DragEvent, status: Status) => {
     e.preventDefault()
     if (draggedTask) {
-      setTasks((prev) => prev.map((task) => (task.id === draggedTask.id ? { ...task, status } : task)))
-      setDraggedTask(null)
-    }
-  }
-
-  const handleAddTask = () => {
-    if (formData.title.trim()) {
-      const newTask: Task = {
-        id: Date.now().toString(),
-        title: formData.title,
-        description: formData.description,
-        priority: formData.priority,
-        status: addingToColumn,
+      try {
+        // Update local state immediately for better UX
+        setTasks((prev) => prev.map((task) => 
+          task.id === draggedTask.id ? { ...task, status } : task
+        ))
+        
+        // Call the moveCard API
+        if (selectedBoard) {
+          const result = await (window.api as any).moveCard?.({
+            cardId: draggedTask.id,
+            newColumnId: status,
+            boardId: selectedBoard.id
+          })
+          
+          if (!result?.success) {
+            // Revert if API call failed
+            setTasks((prev) => prev.map((task) => 
+              task.id === draggedTask.id ? { ...task, status: draggedTask.status } : task
+            ))
+            toast.error('Failed to move card')
+          } else {
+            toast.success('Card moved successfully')
+          }
+        }
+        
+        setDraggedTask(null)
+      } catch (error) {
+        console.error('Failed to move card:', error)
+        toast.error('Failed to move card')
+        // Revert on error
+        setTasks((prev) => prev.map((task) => 
+          task.id === draggedTask.id ? { ...task, status: draggedTask.status } : task
+        ))
+        setDraggedTask(null)
       }
-      setTasks((prev) => [...prev, newTask])
-      setFormData({ title: "", description: "", priority: "Medium" })
-      setIsAddDialogOpen(false)
     }
   }
 
-  const handleEditTask = () => {
+  const handleAddTask = async () => {
+    if (formData.title.trim() && selectedBoard) {
+      try {
+        const newTask: Task = {
+          id: Date.now().toString(),
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          status: addingToColumn,
+          boardId: selectedBoard.id
+        }
+
+        // Call the createCard API
+        const result = await (window.api as any).createCard?.({
+          boardId: selectedBoard.id,
+          columnId: addingToColumn,
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority
+        })
+
+        if (result?.success) {
+          setTasks((prev) => [...prev, newTask])
+          setFormData({ title: "", description: "", priority: "Medium" })
+          setIsAddDialogOpen(false)
+          toast.success('Task created successfully')
+        } else {
+          toast.error('Failed to create task')
+        }
+      } catch (error) {
+        console.error('Failed to create task:', error)
+        toast.error('Failed to create task')
+      }
+    }
+  }
+
+  const handleEditTask = async () => {
     if (editingTask && formData.title.trim()) {
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === editingTask.id
-            ? { ...task, title: formData.title, description: formData.description, priority: formData.priority }
-            : task,
-        ),
-      )
-      setEditingTask(null)
-      setFormData({ title: "", description: "", priority: "Medium" })
+      try {
+        // Call the updateCardContent API
+        const result = await (window.api as any).updateCardContent?.({
+          cardId: editingTask.id,
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority
+        })
+
+        if (result?.success) {
+          setTasks((prev) =>
+            prev.map((task) =>
+              task.id === editingTask.id
+                ? { ...task, title: formData.title, description: formData.description, priority: formData.priority }
+                : task,
+            ),
+          )
+          setEditingTask(null)
+          setFormData({ title: "", description: "", priority: "Medium" })
+          toast.success('Task updated successfully')
+        } else {
+          toast.error('Failed to update task')
+        }
+      } catch (error) {
+        console.error('Failed to update task:', error)
+        toast.error('Failed to update task')
+      }
     }
   }
 
-  const handleDeleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId))
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      const result = await (window.api as any).deleteCard?.(taskId)
+      if (result?.success) {
+        setTasks((prev) => prev.filter((task) => task.id !== taskId))
+        toast.success('Task deleted successfully')
+      } else {
+        toast.error('Failed to delete task')
+      }
+    } catch (error) {
+      console.error('Failed to delete task:', error)
+      toast.error('Failed to delete task')
+    }
   }
 
   const openAddDialog = (status: Status) => {
@@ -159,237 +302,553 @@ export default function KanbanBoard() {
     })
   }
 
+  const handleCreateBoard = async () => {
+    if (!boardFormData.name.trim()) {
+      toast.error('Board name is required')
+      return
+    }
+
+    try {
+      setIsCreatingBoard(true)
+      const result = await (window.api as any).createBoard?.({
+        name: boardFormData.name.trim(),
+        visibility: boardFormData.visibility,
+        columns: boardFormData.columns
+      })
+
+      if (result?.success) {
+        toast.success('Board created successfully!')
+        setIsCreateBoardOpen(false)
+        setBoardFormData({
+          name: "",
+          visibility: "private",
+          columns: ["To Do", "In Progress", "Review", "Done"]
+        })
+        
+        // Refresh the boards list
+        const boardsResult = await (window.api as any).getBoards?.()
+        if (boardsResult && boardsResult.success) {
+          setBoards(boardsResult.boards || [])
+          // Select the newly created board
+          if (result.board) {
+            setSelectedBoard(result.board)
+          }
+        }
+      } else {
+        toast.error(result?.error || 'Failed to create board')
+      }
+    } catch (error) {
+      console.error('Failed to create board:', error)
+      toast.error('Failed to create board')
+    } finally {
+      setIsCreatingBoard(false)
+    }
+  }
+
+  const openCreateBoardDialog = () => {
+    setBoardFormData({
+      name: "",
+      visibility: "private",
+      columns: ["To Do", "In Progress", "Review", "Done"]
+    })
+    setIsCreateBoardOpen(true)
+  }
+
+  if (isLoading) {
+    return (
+      <div className={`min-h-screen transition-colors duration-300 ${
+        isDark ? 'bg-gray-900' : 'bg-gray-50'
+      }`}>
+        <div className="p-6">
+          <div className="text-center">
+            <p className={isDark ? 'text-gray-300' : 'text-gray-600'}>Loading Kanban boards...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search by title..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDark ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
+      <main className="flex-1 p-6">
+        {/* Page Title and Actions */}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>Kanban Boards</h1>
+            <p className={`text-lg transition-colors duration-300 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Manage your project tasks and workflows
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={openCreateBoardDialog}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Board</span>
+            </button>
+          </div>
         </div>
 
-        <div className="relative">
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value as Priority | "All")}
-            className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="All">All priorities</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
-          <svg
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      <div className="flex gap-6 overflow-x-auto pb-6">
-        {columns.map((column) => (
-          <div
-            key={column}
-            className={`flex-shrink-0 w-80 bg-gray-50 rounded-lg p-4 border-t-4 ${columnColors[column]}`}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, column)}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-lg">{column}</h2>
-              <button
-                onClick={() => openAddDialog(column)}
-                className="h-8 w-8 bg-blue-500 hover:bg-blue-600 text-white rounded flex items-center justify-center transition-colors"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-3 min-h-[200px]">
-              {getTasksByStatus(column).map((task) => (
-                <div
-                  key={task.id}
-                  className="bg-white rounded-lg border border-gray-200 p-4 cursor-move hover:shadow-md transition-shadow"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, task)}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-sm">{task.title}</h3>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => openEditDialog(task)}
-                        className="h-6 w-6 p-0 hover:bg-gray-100 rounded flex items-center justify-center"
-                      >
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded flex items-center justify-center"
-                      >
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-2">{task.description}</p>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${priorityColors[task.priority]}`}>
-                    {task.priority}
-                  </span>
-                </div>
+        {/* Board Selection */}
+        {boards.length > 0 ? (
+          <div className="mb-6">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
+              isDark ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Select Board
+            </label>
+            <select
+              value={selectedBoard?.id || ''}
+              onChange={(e) => {
+                const board = boards.find(b => b.id === e.target.value)
+                setSelectedBoard(board || null)
+              }}
+              className={`px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                isDark
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+            >
+              {boards.map((board) => (
+                <option key={board.id} value={board.id}>
+                  {board.name}
+                </option>
               ))}
+            </select>
+          </div>
+        ) : (
+          <div className={`mb-6 p-4 rounded-lg border-2 border-dashed transition-colors duration-300 ${
+            isDark ? 'border-gray-600 bg-gray-800' : 'border-gray-300 bg-gray-50'
+          }`}>
+            <div className="text-center">
+              <p className={`text-sm transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                No boards available. Create your first board to get started!
+              </p>
             </div>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Add Task Modal */}
-      {isAddDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
-            <h2 className="text-lg font-semibold mb-4">Add New Task to {addingToColumn}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter task title"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter task description"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Priority</label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, priority: e.target.value as Priority }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setIsAddDialogOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddTask}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Add Task
-                </button>
-              </div>
+        {/* Search and Filters */}
+        {boards.length > 0 && (
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative flex-1 max-w-md">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`} />
+              <input
+                type="text"
+                placeholder="Search by title..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  isDark 
+                    ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+              />
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Edit Task Modal */}
-      {editingTask && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-md mx-4">
-            <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter task title"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            <div className="relative">
+              <select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value as Priority | "All")}
+                className={`appearance-none border-2 rounded-xl px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-300 ${
+                  isDark
+                    ? 'bg-gray-800 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
+              >
+                <option value="All">All priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+              <Filter className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`} />
+            </div>
+          </div>
+        )}
+
+        {/* Kanban Board */}
+        {boards.length > 0 && selectedBoard ? (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {columns.map((column) => (
+              <div
+                key={column}
+                className={`rounded-xl p-4 border-t-4 transition-colors duration-300 ${
+                  isDark 
+                    ? 'bg-gray-800 border-gray-700' 
+                    : 'bg-white border-gray-200'
+                } ${columnColors[column]}`}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, column)}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={`font-semibold text-lg transition-colors duration-300 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}>{column}</h2>
+                  <button
+                    onClick={() => openAddDialog(column)}
+                    className="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors duration-300"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 min-h-[200px]">
+                  {getTasksByStatus(column).map((task) => (
+                    <div
+                      key={task.id}
+                      className={`rounded-lg border p-4 cursor-move hover:shadow-md transition-all duration-300 ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 hover:bg-gray-650' 
+                          : 'bg-gray-50 border-gray-200 hover:bg-white'
+                      }`}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task)}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className={`font-medium text-sm transition-colors duration-300 ${
+                          isDark ? 'text-white' : 'text-gray-900'
+                        }`}>{task.title}</h3>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => openEditDialog(task)}
+                            className={`h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-600 rounded flex items-center justify-center transition-colors duration-300 ${
+                              isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTask(task.id)}
+                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded flex items-center justify-center transition-colors duration-300"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <p className={`text-xs mb-2 transition-colors duration-300 ${
+                        isDark ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{task.description}</p>
+                      <span className={`inline-block px-2 py-1 text-xs rounded-full ${priorityColors[task.priority]}`}>
+                        {task.priority}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter task description"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            ))}
+          </div>
+        ) : boards.length === 0 ? (
+          <div className={`text-center p-12 rounded-lg transition-colors duration-300 ${
+            isDark ? 'bg-gray-800 border border-gray-700' : 'bg-gray-100 border border-gray-200'
+          }`}>
+            <div className="mb-4">
+              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center transition-colors duration-300 ${
+                isDark ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-500'
+              }`}>
+                <Plus className="w-8 h-8" />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Priority</label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, priority: e.target.value as Priority }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setEditingTask(null)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleEditTask}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Save Changes
-                </button>
+            </div>
+            <h3 className={`text-xl font-semibold mb-2 transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-gray-800'
+            }`}>No Boards Yet</h3>
+            <p className={`mb-4 transition-colors duration-300 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Create your first Kanban board to start organizing tasks and workflows.
+            </p>
+            <button
+              onClick={openCreateBoardDialog}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+            >
+              Create Your First Board
+            </button>
+          </div>
+        ) : (
+          <div className={`text-center p-12 rounded-lg transition-colors duration-300 ${
+            isDark ? 'bg-gray-800 border border-gray-700' : 'bg-gray-100 border border-gray-200'
+          }`}>
+            <h3 className={`text-xl font-semibold mb-2 transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-gray-800'
+            }`}>Select a Board</h3>
+            <p className={`transition-colors duration-300 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Choose a board from the dropdown above to view and manage tasks.
+            </p>
+          </div>
+        )}
+
+        {/* Create Board Modal */}
+        {isCreateBoardOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className={`rounded-xl p-6 w-96 max-w-md mx-4 transition-colors duration-300 ${
+              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+            }`}>
+              <h2 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Create New Board</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Board Name</label>
+                  <input
+                    type="text"
+                    value={boardFormData.name}
+                    onChange={(e) => setBoardFormData((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter board name"
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Visibility</label>
+                  <select
+                    value={boardFormData.visibility}
+                    onChange={(e) => setBoardFormData((prev) => ({ 
+                      ...prev, 
+                      visibility: e.target.value as "private" | "public" 
+                    }))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                  >
+                    <option value="private">Private</option>
+                    <option value="public">Public</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Default Columns</label>
+                  <div className={`p-3 rounded-lg border transition-colors duration-300 ${
+                    isDark
+                      ? 'bg-gray-700 border-gray-600'
+                      : 'bg-gray-50 border-gray-300'
+                  }`}>
+                    <p className={`text-xs transition-colors duration-300 ${
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      To Do, In Progress, Review, Done
+                    </p>
+                    <p className={`text-xs mt-1 transition-colors duration-300 ${
+                      isDark ? 'text-gray-500' : 'text-gray-500'
+                    }`}>
+                      (Default columns will be created automatically)
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setIsCreateBoardOpen(false)}
+                    disabled={isCreatingBoard}
+                    className={`px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300 disabled:opacity-50 ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:text-white'
+                        : 'border-gray-300 text-gray-700 hover:text-gray-900'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateBoard}
+                    disabled={isCreatingBoard || !boardFormData.name.trim()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-300"
+                  >
+                    {isCreatingBoard ? 'Creating...' : 'Create Board'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Add Task Modal */}
+        {isAddDialogOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className={`rounded-xl p-6 w-96 max-w-md mx-4 transition-colors duration-300 ${
+              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+            }`}>
+              <h2 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Add New Task to {addingToColumn}</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Title</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter task title"
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Description</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder="Enter task description"
+                    rows={3}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Priority</label>
+                  <select
+                    value={formData.priority}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, priority: e.target.value as Priority }))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setIsAddDialogOpen(false)}
+                    className={`px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300 ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:text-white'
+                        : 'border-gray-300 text-gray-700 hover:text-gray-900'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddTask}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                  >
+                    Add Task
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Task Modal */}
+        {editingTask && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className={`rounded-xl p-6 w-96 max-w-md mx-4 transition-colors duration-300 ${
+              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+            }`}>
+              <h2 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Edit Task</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Title</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter task title"
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Description</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                    placeholder="Enter task description"
+                    rows={3}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Priority</label>
+                  <select
+                    value={formData.priority}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, priority: e.target.value as Priority }))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
+                      isDark
+                        ? 'bg-gray-700 border-gray-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setEditingTask(null)}
+                    className={`px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300 ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:text-white'
+                        : 'border-gray-300 text-gray-700 hover:text-gray-900'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleEditTask}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   )
 }

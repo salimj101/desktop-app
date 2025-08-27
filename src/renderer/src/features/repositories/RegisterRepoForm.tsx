@@ -10,13 +10,15 @@ interface RegisterRepoFormProps {
   onSuccess?: () => void
   onRepoRegistered?: () => void
   isOffline?: boolean
+  defaultProjectId?: string
 }
 
-export default function RegisterRepoForm({ onCancel, onClose, onSuccess, onRepoRegistered, isOffline }: RegisterRepoFormProps) {
+export default function RegisterRepoForm({ onCancel, onClose, onSuccess, onRepoRegistered, isOffline, defaultProjectId }: RegisterRepoFormProps) {
   const { isDark } = useTheme()
   const [name, setName] = useState('')
   const [path, setPath] = useState('')
   const [description, setDescription] = useState('')
+  const [selectedProjectId, setSelectedProjectId] = useState(defaultProjectId || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [projects, setProjects] = useState<any[] | null>(null)
 
@@ -50,7 +52,14 @@ export default function RegisterRepoForm({ onCancel, onClose, onSuccess, onRepoR
       // Main process returns { success: true, data: [...] } (not `projects`), normalize here
       if (res && res.success) {
         const list = Array.isArray(res.data) ? res.data : Array.isArray(res.projects) ? res.projects : []
-        if (list.length > 0) setProjects(list)
+        if (list.length > 0) {
+          setProjects(list)
+          // Auto-select the first project if none is selected, or use defaultProjectId
+          if (!selectedProjectId && list.length > 0) {
+            const firstProjectId = list[0]._id || list[0].id || list[0].projectId
+            setSelectedProjectId(defaultProjectId || firstProjectId)
+          }
+        }
       }
     } catch (err) {
       // Ignore errors fetching projects; UI will use fallback/defaults
@@ -63,39 +72,30 @@ export default function RegisterRepoForm({ onCancel, onClose, onSuccess, onRepoR
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !path.trim()) {
-      toast.error('Repository name and path are required.')
+    if (!name.trim() || !path.trim() || !selectedProjectId) {
+      toast.error('Repository name, path, and project selection are required.')
       return
     }
-    setIsSubmitting(true)
-    try {
-      // Ensure we have a valid projectId
-      let projectId = null
-      try {
-        if (!projects) {
-          const res = await (window.api as any).getMyProjects?.()
-          const list = res && res.success && Array.isArray(res.data) ? res.data : Array.isArray(res?.projects) ? res.projects : []
-          if (list.length > 0) {
-            projectId = list[0]._id || list[0].id || list[0].projectId
-          }
-        } else if (projects.length > 0) {
-          projectId = projects[0]._id || projects[0].id || projects[0].projectId
-        }
-      } catch (err) {
-        console.warn('Failed to fetch projects:', err)
-      }
-      
-      if (!projectId) {
-        toast.error('No valid project found. Please ensure you have access to at least one project.')
+
+    // Check if project has reached repository limit
+    if (projects) {
+      const selectedProject = projects.find(p => 
+        (p._id || p.id || p.projectId) === selectedProjectId
+      )
+      if (selectedProject && selectedProject.repositories && selectedProject.repositories.length >= 10) {
+        toast.error('This project has reached its repository limit (10). You cannot add more repositories.')
         return
       }
+    }
 
+    setIsSubmitting(true)
+    try {
       // Include a sensible default for permission; backend RegisterRepoInput requires permission
       const payload = {
         name: name.trim(),
         path: path.trim(),
         description: description.trim(),
-        projectId
+        projectId: selectedProjectId
       }
 
       console.log('Sending registration payload:', payload)
@@ -141,6 +141,51 @@ export default function RegisterRepoForm({ onCancel, onClose, onSuccess, onRepoR
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="project-select" className="block text-sm font-medium mb-2">
+              Project
+            </label>
+            <select
+              id="project-select"
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                isDark
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-gray-50 border-gray-300 text-gray-900'
+              }`}
+              required
+            >
+              <option value="">Select a project</option>
+              {projects && projects.map((project) => (
+                <option 
+                  key={project._id || project.id || project.projectId} 
+                  value={project._id || project.id || project.projectId}
+                >
+                  {project.name}
+                </option>
+              ))}
+            </select>
+            <p className={`text-xs mt-1 transition-colors duration-300 ${
+              isDark ? 'text-gray-400' : 'text-gray-500'
+            }`}>
+              Choose which project to add this repository to
+            </p>
+            {selectedProjectId && projects && (() => {
+              const selectedProject = projects.find(p => 
+                (p._id || p.id || p.projectId) === selectedProjectId
+              )
+              if (selectedProject && selectedProject.repositories && selectedProject.repositories.length >= 10) {
+                return (
+                  <p className="text-xs mt-1 text-red-600 dark:text-red-400">
+                    ⚠️ This project has reached its repository limit (10). You cannot add more repositories.
+                  </p>
+                )
+              }
+              return null
+            })()}
+          </div>
+
           <div>
             <label htmlFor="repo-name" className="block text-sm font-medium mb-2">
               Repository Name
@@ -218,7 +263,13 @@ export default function RegisterRepoForm({ onCancel, onClose, onSuccess, onRepoR
           <div className="flex justify-end pt-4">
             <button
               type="submit"
-              disabled={isSubmitting || isOffline}
+              disabled={isSubmitting || isOffline || (() => {
+                if (!selectedProjectId || !projects) return false
+                const selectedProject = projects.find(p => 
+                  (p._id || p.id || p.projectId) === selectedProjectId
+                )
+                return selectedProject && selectedProject.repositories && selectedProject.repositories.length >= 10
+              })()}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center space-x-2 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-300"
             >
               <Save className="w-5 h-5" />
