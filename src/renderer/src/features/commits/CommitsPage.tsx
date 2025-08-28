@@ -14,6 +14,7 @@ import {
   ExternalLink
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useTheme } from '../../contexts/ThemeContext'
 
 // --- NEW TYPES ---
 // These types match the data structure from the getCommits API
@@ -47,6 +48,7 @@ interface NavigationState {
 
 // --- COMPONENT ---
 export default function CommitsPage() {
+  const { isDark } = useTheme()
   const [navigation, setNavigation] = useState<NavigationState>({ view: 'repositories' })
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -133,13 +135,21 @@ export default function CommitsPage() {
       </div>
       <div className="mb-6">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search
+            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+              isDark ? 'text-gray-400' : 'text-gray-400'
+            }`}
+          />
           <input
             type="text"
             placeholder="Search repositories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full pl-10 pr-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+              isDark
+                ? 'border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-400'
+                : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
+            }`}
           />
         </div>
       </div>
@@ -147,31 +157,39 @@ export default function CommitsPage() {
         {filteredRepositories.map((repo) => (
           <div
             key={repo.repoId}
-            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+            className={`rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${
+              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+            }`}
             onClick={() =>
               setNavigation({ view: 'commits', repoId: repo.repoId, repoName: repo.repoName })
             }
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
               <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                  <Folder className="w-4 h-4 text-blue-600" />
+                <div
+                  className={`${isDark ? 'bg-gray-700' : 'bg-blue-100'} w-8 h-8 rounded flex items-center justify-center`}
+                >
+                  <Folder className={`w-4 h-4 ${isDark ? 'text-gray-200' : 'text-blue-600'}`} />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-medium text-gray-900 truncate">{repo.repoName}</h3>
-                  <p className="text-sm text-gray-600 truncate">
+                  <h3 className={`font-medium truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {repo.repoName}
+                  </h3>
+                  <p className={`text-sm truncate ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {repo.totalCommits} commit(s) found in local database.
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-1">
-                  <GitCommit className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">{repo.totalCommits} commits</span>
+                  <GitCommit className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {repo.totalCommits} commits
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">
+                  <Calendar className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     {repo.commits.length > 0
                       ? new Date(repo.commits[0].timestamp).toLocaleDateString()
                       : 'N/A'}
@@ -192,30 +210,40 @@ export default function CommitsPage() {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => setNavigation({ view: 'repositories' })}
-          className="p-2 hover:bg-gray-100 rounded-lg"
+          className={`p-2 rounded-lg ${isDark ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-100'}`}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+          <h1 className={`text-2xl font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {currentRepository?.repoName}
           </h1>
-          <p className="text-gray-600">Repository commits and history</p>
+          <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Repository commits and history
+          </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <GitCommit className="w-4 h-4" />
+        <div
+          className={`flex items-center gap-2 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
+        >
+          <GitCommit className={`w-4 h-4 ${isDark ? 'text-gray-300' : ''}`} />
           <span>{currentCommits.length} commits</span>
         </div>
       </div>
       <div className="mb-6">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search
+            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`}
+          />
           <input
             type="text"
             placeholder="Search commits..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full pl-10 pr-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+              isDark
+                ? 'border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-400'
+                : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
+            }`}
           />
         </div>
       </div>
@@ -223,7 +251,9 @@ export default function CommitsPage() {
         {filteredCommits.map((commit) => (
           <div
             key={commit.commitHash}
-            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+            className={`rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${
+              isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+            }`}
             onClick={() =>
               setNavigation({
                 view: 'commit-detail',
@@ -235,19 +265,25 @@ export default function CommitsPage() {
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
               <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-mono">
+                <div
+                  className={`${isDark ? 'bg-gray-700 text-gray-200' : 'bg-blue-100 text-blue-800'} px-2 py-1 rounded text-xs font-mono`}
+                >
                   {commit.commitHash.substring(0, 8)}
                 </div>
-                <span className="text-gray-900 truncate">{commit.message}</span>
+                <span className={`${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                  {commit.message}
+                </span>
               </div>
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-1">
-                  <User className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">{commit.author}</span>
+                  <User className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {commit.author}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">
+                  <Calendar className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     {new Date(commit.timestamp).toLocaleString()}
                   </span>
                 </div>
@@ -287,38 +323,58 @@ export default function CommitsPage() {
                 repoName: navigation.repoName
               })
             }
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className={`p-2 rounded-lg ${isDark ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-100'}`}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+            <h1
+              className={`text-2xl font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}
+            >
               {currentCommitDetail.message}
             </h1>
           </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+        <div
+          className={`rounded-lg p-6 mb-6 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Commit Hash</label>
+                <label
+                  className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Commit Hash
+                </label>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="bg-gray-100 px-2 py-1 rounded text-sm font-mono truncate">
+                  <span
+                    className={`px-2 py-1 rounded text-sm font-mono truncate ${isDark ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-900'}`}
+                  >
                     {currentCommitDetail.commitHash}
                   </span>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Author</label>
+                <label
+                  className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Author
+                </label>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-gray-900">{currentCommitDetail.author}</span>
+                  <span className={`${isDark ? 'text-gray-200' : 'text-gray-900'} text-sm`}>
+                    {currentCommitDetail.author}
+                  </span>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Date</label>
+                <label
+                  className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Date
+                </label>
                 <div className="flex items-center gap-1 mt-1">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-900">
+                  <Calendar className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span className={`${isDark ? 'text-gray-200' : 'text-gray-900'} text-sm`}>
                     {new Date(currentCommitDetail.timestamp).toLocaleString()}
                   </span>
                 </div>
@@ -326,7 +382,11 @@ export default function CommitsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Status</label>
+                <label
+                  className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Status
+                </label>
                 <div className="mt-1">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -340,12 +400,20 @@ export default function CommitsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Branch</label>
-                <p className="text-sm text-gray-900 mt-1">{currentCommitDetail.branch}</p>
+                <label
+                  className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Branch
+                </label>
+                <p className={`${isDark ? 'text-gray-200' : 'text-gray-900'} text-sm mt-1`}>
+                  {currentCommitDetail.branch}
+                </p>
               </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 pt-4 border-t border-gray-200">
+          <div
+            className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+          >
             <div className="flex items-center gap-1 text-green-600">
               <Plus className="w-4 h-4" />
               <span className="font-medium">{stats.additions || 0}</span>
@@ -358,17 +426,30 @@ export default function CommitsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div
+          className={`rounded-lg p-6 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}
+        >
           <div className="flex items-center gap-2 mb-6">
-            <FileText className="w-4 h-4" />
-            <h2 className="font-medium text-gray-900">Files Changed ({changedFiles.length})</h2>
+            <FileText className={`w-4 h-4 ${isDark ? 'text-gray-200' : ''}`} />
+            <h2 className={`${isDark ? 'text-white' : 'text-gray-900'} font-medium`}>
+              Files Changed ({changedFiles.length})
+            </h2>
           </div>
           <div className="space-y-4">
             {changedFiles.map((file, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
+              <div
+                key={index}
+                className={`rounded-lg overflow-hidden border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}
+              >
+                <div
+                  className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b ${isDark ? 'bg-gray-700 border-b border-gray-700' : 'bg-gray-50 border-b border-gray-200'}`}
+                >
                   <div className="flex items-center gap-3 mb-2 sm:mb-0">
-                    <span className="text-sm font-mono text-gray-900 truncate">{file.file}</span>
+                    <span
+                      className={`${isDark ? 'text-gray-200' : 'text-gray-900'} text-sm font-mono truncate`}
+                    >
+                      {file.file}
+                    </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3 text-sm">
