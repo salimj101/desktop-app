@@ -14,6 +14,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { Repository, DashboardStats } from '../../types'
 import { toast } from 'react-hot-toast'
 import RegisterRepoForm from '../repositories/RegisterRepoForm'
+import RepoDetailModal from '../repositories/RepoDetailModal'
 
 export default function DashboardPage() {
   const { isDark } = useTheme()
@@ -63,14 +64,8 @@ export default function DashboardPage() {
       } else {
         // compute fallback stats from mapped repos
         const totalRepositories = mapped.length
-        const totalCommits = mapped.reduce(
-          (s, it) => s + Number(it.health?.commits ?? 0),
-          0
-        )
-        const totalBranches = mapped.reduce(
-          (s, it) => s + Number(it.health?.branches ?? 0),
-          0
-        )
+        const totalCommits = mapped.reduce((s, it) => s + Number(it.health?.commits ?? 0), 0)
+        const totalBranches = mapped.reduce((s, it) => s + Number(it.health?.branches ?? 0), 0)
         const synced = mapped.filter(
           (it) => it.health?.synced === true || it.status === 'active'
         ).length
@@ -125,6 +120,20 @@ export default function DashboardPage() {
   const handleSyncNow = (repoId: string) => {
     // TODO: Sync repository
     console.log('Sync repo:', repoId)
+  }
+
+  // Repo detail modal state
+  const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null)
+  const [isRepoModalOpen, setIsRepoModalOpen] = useState(false)
+
+  const openRepoModal = (repo: Repository) => {
+    setSelectedRepoId(repo._id)
+    setIsRepoModalOpen(true)
+  }
+
+  const closeRepoModal = () => {
+    setIsRepoModalOpen(false)
+    setSelectedRepoId(null)
   }
 
   const filteredRepositories = repositories.filter(
@@ -311,7 +320,13 @@ export default function DashboardPage() {
             {filteredRepositories.map((repo) => (
               <div
                 key={repo._id}
-                className={`p-6 rounded-xl transition-colors duration-300 ${
+                onClick={() => openRepoModal(repo)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') openRepoModal(repo)
+                }}
+                className={`p-6 rounded-xl transition-colors duration-300 cursor-pointer ${
                   isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
                 } shadow-sm`}
               >
@@ -325,25 +340,6 @@ export default function DashboardPage() {
                       >
                         {repo.name}
                       </h3>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          repo.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-orange-100 text-orange-800'
-                        }`}
-                      >
-                        {repo.status === 'active' ? (
-                          <span className="flex items-center">
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="flex items-center">
-                            <AlertTriangle className="w-4 h-4 mr-1" />
-                            {repo.status}
-                          </span>
-                        )}
-                      </span>
                     </div>
                     <p
                       className={`mb-3 transition-colors duration-300 ${
@@ -367,8 +363,27 @@ export default function DashboardPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                    <button
+                  <div className="flex flex-col items-end ml-4 space-y-2">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        repo.status === 'active'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-orange-100 text-orange-800'
+                      }`}
+                    >
+                      {repo.status === 'active' ? (
+                        <span className="flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <AlertTriangle className="w-4 h-4 mr-1" />
+                          {repo.status}
+                        </span>
+                      )}
+                    </span>
+                    {/* <button
                       onClick={() => handleViewDetails(repo._id)}
                       className={`px-4 py-2 border rounded-lg transition-colors duration-300 ${
                         isDark
@@ -377,8 +392,8 @@ export default function DashboardPage() {
                       }`}
                     >
                       View Details
-                    </button>
-                    <button
+                    </button> */}
+                    {/* <button
                       onClick={() => handleRefreshRepo(repo._id)}
                       className={`px-4 py-2 border rounded-lg transition-colors duration-300 ${
                         isDark
@@ -387,7 +402,7 @@ export default function DashboardPage() {
                       }`}
                     >
                       Refresh
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -403,6 +418,17 @@ export default function DashboardPage() {
             setIsRegisterModalOpen(false)
             fetchDashboardData()
           }}
+        />
+      )}
+      {isRepoModalOpen && selectedRepoId && (
+        <RepoDetailModal
+          repoId={selectedRepoId}
+          onClose={closeRepoModal}
+          onUpdate={() => {
+            closeRepoModal()
+            fetchDashboardData()
+          }}
+          initialRepo={repositories.find((r) => r._id === selectedRepoId)}
         />
       )}
     </div>
