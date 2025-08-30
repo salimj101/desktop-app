@@ -56,11 +56,11 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
     >
       {/* Sidebar - desktop */}
       <aside
-        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} hidden md:block transition-all duration-300 shadow-lg ${
+        className={`${sidebarCollapsed ? 'w-20' : 'w-64'} hidden md:block sticky top-0 h-screen flex-shrink-0 transition-all duration-300 shadow-lg ${
           isDark ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'
         }`}
       >
-        <div className="p-4">
+        <div className="p-4 h-full flex flex-col">
           {/* Collapse Button */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -70,9 +70,7 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
             aria-label="Toggle sidebar"
           >
             <ChevronLeft
-              className={`w-5 h-5 transition-transform duration-300 ${
-                sidebarCollapsed ? 'rotate-180' : ''
-              }`}
+              className={`transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180 w-6 h-6' : 'w-5 h-5'}`}
             />
           </button>
 
@@ -88,12 +86,14 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
           )}
 
           {/* Navigation Items */}
-          <nav className="space-y-2">
+          <nav className="space-y-2 flex-1 overflow-auto">
             {navigationItems.map((item, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentPage(item.page)}
-                className={`w-full flex items-center p-3 rounded-lg transition-colors duration-300 ${
+                className={`w-full flex items-center p-3 rounded-lg h-12 transition-colors duration-300 ${
+                  sidebarCollapsed ? 'justify-center' : ''
+                } ${
                   currentPage === item.page
                     ? 'bg-blue-600 text-white'
                     : isDark
@@ -101,7 +101,7 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
                       : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className={`${sidebarCollapsed ? 'w-8 h-8' : 'w-5 h-5'}`} />
                 {!sidebarCollapsed && (
                   <span className="ml-3 font-medium truncate">{item.label}</span>
                 )}
