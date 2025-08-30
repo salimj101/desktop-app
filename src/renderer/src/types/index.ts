@@ -89,11 +89,12 @@ export interface DashboardStats {
 }
 
 export interface RepositoryStatus {
-  id: string
+  repoId: string
   name: string
   path: string
   branches: number
   lastCommit: string
   status: 'missing_local' | 'synced' | 'unsynced' | 'moved' | 'deleted' | 'ok' | 'missing' | 'fingerprint_mismatch'
   syncStatus?: 'missing_local' | 'synced' | 'unsynced' | 'moved' | 'deleted' | 'ok' | 'missing' | 'fingerprint_mismatch' | 'offline'
+  repoFingerprint: string
 }
