@@ -190,7 +190,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        {/* Use 2 columns by default so smaller screens show two cards per row; switch to 4 cols at md+ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           {[
             {
               label: 'Total Repositories',
@@ -206,13 +207,7 @@ export default function DashboardPage() {
               icon: GitCommit,
               color: 'purple'
             },
-            {
-              label: 'Total Branches',
-              value: stats?.totalBranches ?? 0,
-              subtitle: 'Across all repositories',
-              icon: GitBranch,
-              color: 'indigo'
-            },
+
             {
               label: 'Synced',
               value: stats?.synced ?? 0,
@@ -230,7 +225,7 @@ export default function DashboardPage() {
           ].map((card, index) => (
             <div
               key={index}
-              className={`p-6 rounded-xl transition-colors duration-300 ${
+              className={`p-4 sm:p-6 rounded-xl transition-colors duration-300 ${
                 isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
               } shadow-sm`}
             >
@@ -264,7 +259,8 @@ export default function DashboardPage() {
                             : 'bg-indigo-100 text-indigo-600'
                   }`}
                 >
-                  <card.icon className="w-5 h-5" />
+                  {/* slightly larger icon on small screens to keep it visible when cards are tight */}
+                  <card.icon className="w-6 h-6 sm:w-5 sm:h-5" />
                 </div>
               </div>
               <p
