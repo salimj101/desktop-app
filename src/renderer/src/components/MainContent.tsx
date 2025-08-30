@@ -9,10 +9,11 @@ import KanbanBoard from '@renderer/features/kanban/KanbanBoard'
 import CommitsPage from '@renderer/features/commits/CommitsPage'
 
 interface MainContentProps {
+  user: any
   onLogout: () => void
 }
 
-export default function MainContent({ onLogout }: MainContentProps) {
+export default function MainContent({ user, onLogout }: MainContentProps) {
   const { currentPage } = useNavigation()
   const { isDark } = useTheme()
 
@@ -32,17 +33,27 @@ export default function MainContent({ onLogout }: MainContentProps) {
         return <CommitsPage />
         // TODO: Implement other pages
         return (
-          <div className={`min-h-screen transition-colors duration-300 ${
-            isDark ? 'bg-gray-900' : 'bg-gray-50'
-          }`}>
+          <div
+            className={`min-h-screen transition-colors duration-300 ${
+              isDark ? 'bg-gray-900' : 'bg-gray-50'
+            }`}
+          >
             <div className="p-6">
               <div className="text-center">
-                <h1 className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
-                  isDark ? 'text-white' : 'text-gray-900'
-                }`}>{currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}</h1>
-                <p className={`transition-colors duration-300 ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}>This page is coming soon!</p>
+                <h1
+                  className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
+                    isDark ? 'text-white' : 'text-gray-900'
+                  }`}
+                >
+                  {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}
+                </h1>
+                <p
+                  className={`transition-colors duration-300 ${
+                    isDark ? 'text-gray-400' : 'text-gray-600'
+                  }`}
+                >
+                  This page is coming soon!
+                </p>
               </div>
             </div>
           </div>
@@ -53,7 +64,7 @@ export default function MainContent({ onLogout }: MainContentProps) {
   }
 
   return (
-    <SharedLayout onLogout={onLogout}>
+    <SharedLayout user={user} onLogout={onLogout}>
       {renderPageContent()}
     </SharedLayout>
   )

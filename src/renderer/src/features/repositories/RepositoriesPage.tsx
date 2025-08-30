@@ -34,13 +34,14 @@ export default function RepositoriesPage() {
       if (result && result.success) {
         // Ensure repositories is always an array and conforms to RepositoryStatus
         const repos: RepositoryStatus[] = (result.repositories || []).map((repo: any) => ({
-          id: repo.repoId ?? repo._id ?? repo.id,
+          repoId: repo.repoId ?? repo._id ?? repo.id,
           name: repo.name,
           path: repo.path,
           branches: repo.branches ?? 0,
           lastCommit: repo.lastCommit ?? 'N/A',
           status: repo.status ?? 'unsynced',
-          syncStatus: repo.syncStatus || repo.status
+          syncStatus: repo.syncStatus || repo.status,
+          repoFingerprint: repo.repoFingerprint || ''
         }))
         setRepositories(repos)
         // backend can return a status flag when it's using offline/cache mode
@@ -77,14 +78,14 @@ export default function RepositoriesPage() {
         toast.success(bulk.message || 'All repositories checked.', { id: 'sync-all' })
       } else {
         // fallback: iterate and call syncCommits
-        const candidates = repositories.filter((r) => !!r.id)
+        const candidates = repositories.filter((r) => !!r.repoId)
         let ok = 0
         for (const r of candidates) {
           try {
-            const res = await window.api.syncCommits(r.id)
+            const res = await window.api.syncCommits(r.repoId)
             if (res && res.success) ok++
           } catch (e) {
-            console.warn('syncCommits failed for', r.id, e)
+            console.warn('syncCommits failed for', r.repoId, e)
           }
         }
         toast.success(`Sync complete: ${ok}/${candidates.length} repositories synced.`, {
@@ -202,7 +203,7 @@ export default function RepositoriesPage() {
           ) : filteredRepositories.length > 0 ? (
             filteredRepositories.map((repo) => (
             <div
-              key={repo.id}
+              key={repo.repoId}
               onClick={() => setSelectedRepo(repo)}
               className={`p-6 rounded-xl transition-colors duration-300 ${
               isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
@@ -313,7 +314,7 @@ export default function RepositoriesPage() {
       )}
       {selectedRepo && (
         <RepoDetailModal
-          repoId={selectedRepo.id}
+          repoId={selectedRepo.repoId}
           initialRepo={selectedRepo as any}
           onClose={() => setSelectedRepo(null)}
           onUpdate={() => fetchRepositories()}

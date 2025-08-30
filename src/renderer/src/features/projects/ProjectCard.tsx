@@ -26,7 +26,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
 
   return (
     <div
-      className={`rounded-2xl shadow-sm border p-6 flex flex-col gap-4 w-full transition-colors duration-300 ${
+      role="button"
+      tabIndex={0}
+      onClick={() => onClick()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      className={`rounded-2xl shadow-sm border p-6 flex flex-col gap-4 w-full transition-colors duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 ${
         isDark ? 'bg-gray-800 border-gray-700' : 'bg-[#F8FAFC] border-gray-200'
       }`}
     >

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   ChevronLeft,
   Grid3X3,
@@ -16,13 +16,26 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useNavigation } from '../contexts/NavigationContext'
 
 interface SharedLayoutProps {
+  user?: { userId?: string; email?: string }
   onLogout: () => void
   children: React.ReactNode
 }
 
-export default function SharedLayout({ onLogout, children }: SharedLayoutProps) {
+export default function SharedLayout({ user, onLogout, children }: SharedLayoutProps) {
   const { isDark, toggleTheme } = useTheme()
   const { currentPage, setCurrentPage } = useNavigation()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!profileRef.current) return
+      if (!profileRef.current.contains(e.target as Node)) setProfileOpen(false)
+    }
+    document.addEventListener('click', onDocClick)
+    return () => document.removeEventListener('click', onDocClick)
+  }, [])
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -179,14 +192,51 @@ export default function SharedLayout({ onLogout, children }: SharedLayoutProps) 
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              {/* Logout Button */}
-              <button
-                onClick={onLogout}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-300 bg-black text-white hover:bg-gray-800"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden md:inline">Logout</span>
-              </button>
+              {/* Profile dropdown */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen((s) => !s)}
+                  aria-haspopup="true"
+                  aria-expanded={profileOpen}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200 border ${
+                    isDark
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-gray-100 border-gray-200 text-gray-800'
+                  }`}
+                  title="Open profile menu"
+                >
+                  <span className="font-medium text-sm">
+                    {user?.email?.charAt(0).toUpperCase() ?? 'U'}
+                  </span>
+                </button>
+
+                {profileOpen && (
+                  <div
+                    className={`absolute right-0 mt-2 w-44 rounded-md shadow-lg z-50 ${isDark ? 'bg-gray-800 border border-gray-700 text-white' : 'bg-white border border-gray-200 text-gray-900'}`}
+                    role="menu"
+                  >
+                    <div className="p-3">
+                      <div className="mb-2">
+                        <div className="text-sm font-medium">{user?.email ?? 'User'}</div>
+                        <div className="text-xs text-gray-400">{user?.userId ?? ''}</div>
+                      </div>
+                      <div className="border-t pt-2">
+                        <button
+                          className={`w-full px-3 py-2 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-2 justify-center ${isDark ? 'bg-gray-800' : 'bg-white'}`}
+                          onClick={() => {
+                            setProfileOpen(false)
+                            onLogout()
+                          }}
+                          role="menuitem"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
