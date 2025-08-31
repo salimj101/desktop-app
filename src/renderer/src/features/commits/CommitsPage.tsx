@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ChevronLeft,
   Search,
@@ -10,8 +10,7 @@ import {
   User,
   FileText,
   Plus,
-  Minus,
-  ExternalLink
+  Minus
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -25,8 +24,10 @@ interface ApiCommit {
   timestamp: string
   syncedAt: string | null
   branch: string
-  stats: string // JSON string: { additions, deletions }
-  changes: string // JSON string: [{ file, additions, deletions, changes }]
+  // stats JSON contains files_changed, files_added, files_removed, lines_added, lines_removed
+  stats: string
+  // changes JSON is an array with items: { fileName, added, removed } (or legacy keys additions/deletions)
+  changes: string
 }
 
 interface ApiRepo {
@@ -83,6 +84,11 @@ export default function CommitsPage() {
   const currentRepository = repoCommits.find((r) => r.repoId === navigation.repoId)
   const currentCommits = currentRepository?.commits || []
   const currentCommitDetail = currentCommits.find((c) => c.commitHash === navigation.commitHash)
+
+  // Helper: consider a commit synced if `syncedAt` exists OR `synced` flag is truthy (covers 1/0)
+  const isCommitSynced = (commit: any) => {
+    return Boolean(commit.syncedAt) || Boolean(commit.synced)
+  }
 
   // --- FILTERING LOGIC ---
   const filteredRepositories = repoCommits.filter((repo) =>
@@ -289,12 +295,12 @@ export default function CommitsPage() {
                 </div>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    commit.syncedAt
+                    isCommitSynced(commit)
                       ? 'bg-green-100 text-green-800'
                       : 'bg-orange-100 text-orange-800'
                   }`}
                 >
-                  {commit.syncedAt ? 'Synced' : 'Unsynced'}
+                  {isCommitSynced(commit) ? 'Synced' : 'Unsynced'}
                 </span>
               </div>
             </div>
@@ -390,12 +396,12 @@ export default function CommitsPage() {
                 <div className="mt-1">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      currentCommitDetail.syncedAt
+                      isCommitSynced(currentCommitDetail)
                         ? 'bg-green-100 text-green-800'
                         : 'bg-orange-100 text-orange-800'
                     }`}
                   >
-                    {currentCommitDetail.syncedAt ? 'Synced' : 'Unsynced'}
+                    {isCommitSynced(currentCommitDetail) ? 'Synced' : 'Unsynced'}
                   </span>
                 </div>
               </div>
@@ -416,12 +422,12 @@ export default function CommitsPage() {
           >
             <div className="flex items-center gap-1 text-green-600">
               <Plus className="w-4 h-4" />
-              <span className="font-medium">{stats.additions || 0}</span>
+              <span className="font-medium">{stats.files_added ?? stats.lines_added ?? 0}</span>
               <span className="text-sm">additions</span>
             </div>
             <div className="flex items-center gap-1 text-red-600">
               <Minus className="w-4 h-4" />
-              <span className="font-medium">{stats.deletions || 0}</span>
+              <span className="font-medium">{stats.files_removed ?? stats.lines_removed ?? 0}</span>
               <span className="text-sm">deletions</span>
             </div>
           </div>
@@ -448,18 +454,18 @@ export default function CommitsPage() {
                     <span
                       className={`${isDark ? 'text-gray-200' : 'text-gray-900'} text-sm font-mono truncate`}
                     >
-                      {file.file}
+                      {file.fileName || file.file}
                     </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3 text-sm">
                       <div className="flex items-center gap-1 text-green-600">
                         <Plus className="w-3 h-3" />
-                        <span>{file.additions}</span>
+                        <span>{file.added ?? file.additions ?? 0}</span>
                       </div>
                       <div className="flex items-center gap-1 text-red-600">
                         <Minus className="w-3 h-3" />
-                        <span>{file.deletions}</span>
+                        <span>{file.removed ?? file.deletions ?? 0}</span>
                       </div>
                     </div>
                   </div>

@@ -32,9 +32,17 @@ export function registerGitHandlers(): void {
       // Get all repos with their commit counts
       const repos = db.prepare('SELECT repoId, name FROM repositories').all()
       const repoCommits = repos.map((repo) => {
-        const commits = db
+        const rawCommits = db
           .prepare('SELECT * FROM git_commits WHERE repoId = ? ORDER BY timestamp DESC')
           .all(repo.repoId)
+
+        // Map DB rows to include a consumer-friendly `syncedAt` field
+        const commits = rawCommits.map((c: any) => ({
+          ...c,
+          // If synced flag is truthy, expose a syncedAt timestamp (prefer updatedAt then createdAt)
+          syncedAt: c.synced ? c.updatedAt || c.createdAt || null : null
+        }))
+
         return {
           repoId: repo.repoId,
           repoName: repo.name,
