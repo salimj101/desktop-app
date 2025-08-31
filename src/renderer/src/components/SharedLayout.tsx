@@ -56,7 +56,7 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
     >
       {/* Sidebar - desktop */}
       <aside
-        className={`${sidebarCollapsed ? 'w-20' : 'w-64'} hidden md:block sticky top-0 h-screen flex-shrink-0 transition-all duration-300 shadow-lg ${
+        className={`${sidebarCollapsed ? 'w-16' : 'w-48'} hidden md:block sticky top-0 h-screen flex-shrink-0 transition-all duration-300 shadow-lg ${
           isDark ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'
         }`}
       >
@@ -87,26 +87,48 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
 
           {/* Navigation Items */}
           <nav className="space-y-2 flex-1 overflow-auto">
-            {navigationItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentPage(item.page)}
-                className={`w-full flex items-center p-3 rounded-lg h-12 transition-colors duration-300 ${
-                  sidebarCollapsed ? 'justify-center' : ''
-                } ${
-                  currentPage === item.page
-                    ? 'bg-blue-600 text-white'
-                    : isDark
-                      ? 'text-gray-300 hover:bg-gray-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className={`${sidebarCollapsed ? 'w-8 h-8' : 'w-5 h-5'}`} />
-                {!sidebarCollapsed && (
-                  <span className="ml-3 font-medium truncate">{item.label}</span>
-                )}
-              </button>
-            ))}
+            {navigationItems.map((item, index) => {
+              const isActive = currentPage === item.page
+              const btnColorClass = isActive
+                ? 'bg-blue-600 text-white'
+                : isDark
+                  ? 'text-gray-300 hover:bg-gray-700'
+                  : 'text-gray-700 hover:bg-gray-100'
+              const iconColorClass = isActive
+                ? 'text-white'
+                : isDark
+                  ? 'text-gray-300'
+                  : 'text-gray-700'
+
+              const collapsedIconWrapper = isActive
+                ? 'bg-blue-600 text-white'
+                : isDark
+                  ? 'bg-gray-700 text-gray-200'
+                  : 'bg-gray-100 text-gray-700'
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(item.page)}
+                  className={`w-full flex items-center p-3 rounded-lg h-12 transition-colors duration-300 ${
+                    sidebarCollapsed ? 'justify-center' : ''
+                  } ${btnColorClass}`}
+                >
+                  {sidebarCollapsed ? (
+                    <span
+                      className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-colors ${collapsedIconWrapper}`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                    </span>
+                  ) : (
+                    <item.icon className={`w-5 h-5 ${iconColorClass}`} />
+                  )}
+                  {!sidebarCollapsed && (
+                    <span className="ml-3 font-medium truncate">{item.label}</span>
+                  )}
+                </button>
+              )
+            })}
           </nav>
         </div>
       </aside>
@@ -128,25 +150,33 @@ export default function SharedLayout({ user, onLogout, children }: SharedLayoutP
             </button>
           </div>
           <nav className="space-y-2">
-            {navigationItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setCurrentPage(item.page)
-                  setMobileOpen(false)
-                }}
-                className={`w-full flex items-center p-3 rounded-lg transition-colors duration-300 ${
-                  currentPage === item.page
-                    ? 'bg-blue-600 text-white'
-                    : isDark
-                      ? 'text-gray-300 hover:bg-gray-700'
-                      : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="ml-3 font-medium">{item.label}</span>
-              </button>
-            ))}
+            {navigationItems.map((item, index) => {
+              const isActive = currentPage === item.page
+              const btnColorClass = isActive
+                ? 'bg-blue-600 text-white'
+                : isDark
+                  ? 'text-gray-300 hover:bg-gray-700'
+                  : 'text-gray-700 hover:bg-gray-100'
+              const iconColorClass = isActive
+                ? 'text-white'
+                : isDark
+                  ? 'text-gray-300'
+                  : 'text-gray-700'
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setCurrentPage(item.page)
+                    setMobileOpen(false)
+                  }}
+                  className={`w-full flex items-center p-3 rounded-lg transition-colors duration-300 ${btnColorClass}`}
+                >
+                  <item.icon className={`w-5 h-5 ${iconColorClass}`} />
+                  <span className="ml-3 font-medium">{item.label}</span>
+                </button>
+              )
+            })}
           </nav>
         </aside>
       </div>
